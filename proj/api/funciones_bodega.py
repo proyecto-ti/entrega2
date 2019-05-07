@@ -60,9 +60,9 @@ def revisarBodega():
     result = requests.get(url, headers=headers)
     return result
 
-print(revisarBodega().json())
-for almacen in revisarBodega().json():
-    print(obtener_sku_con_stock(almacen['_id']))
+#print(revisarBodega().json())
+#for almacen in revisarBodega().json():
+#    print(obtener_sku_con_stock(almacen['_id']))
 
 def entregar_id_almacen(almacen):
     revisar_bodega = revisarBodega()
@@ -151,7 +151,7 @@ def stock_fixed():
     for sku in list_skus:
         if sku in sku_producidos:
             list_response.append({"sku": sku, "nombre": datos[sku]["nombre"], "total": dict_response[sku]})
-    print(list_response)
+    #print(list_response)
     return list_response
 
 
@@ -331,6 +331,7 @@ def devolver_cantidad(stock_actual, sku1):
             return elemento["total"]
     return 0
 
+
 def calcular_stock_unidades(stock_actual, diccionario):
     dict_compras_cantidad = dict()
     #print("\t2.1.1")
@@ -345,7 +346,8 @@ def calcular_stock_unidades(stock_actual, diccionario):
                 dict_compras_cantidad[sku] = cantidad_pedir
     return dict_compras_cantidad
 
-
+# ENTREGA MATERIAS PRIMAS NECESARIAS PARA CUMPLIR STOCK MINIMO
+# SE VA ACTUALIZANDO EL DICCIONARIO HASTA LLEGAR A PRODUCTOS QUE NO TIENEN INGREDIENTES
 def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {}):
 
     for sku, cantidad in dict_comprar.items():
@@ -372,6 +374,7 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
     return dict_compra_final
 
 
+# LLAMA A calcular_cantidad_comprar RESTANDO LAS MATERIAS PRIMAS DEL INVENTARIO
 def generar_dict_compras():
     datos_productos = productos()
     stock_actual = stock()
@@ -393,7 +396,10 @@ def generar_dict_compras():
 ########
 
 
-def pedir_productos_sku(sku, cantidad, url_changed = False):
+# PIDE MATERIAS PRIMAS QUE NO PRODUZCA NUESTRO GRUPO
+# SE LE ENTREGA UN SKU Y UNA CANTDIAD
+"""SE DEBE PEDIR CON OC"""
+def pedir_productos_sku(sku, cantidad, url_changed=False):
     datos = productos()
     productores = datos[sku]["productores"]
     total_pedido = 0
@@ -416,6 +422,7 @@ def pedir_productos_sku(sku, cantidad, url_changed = False):
         #print(fabricarSinPago(sku, cantidad))
 
 
+# BUSCA INVENTARIO DE UN GRUPO
 def get_inventories_grupox(grupo, url_changed=False):
     if not url_changed:
         url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories'
@@ -426,6 +433,9 @@ def get_inventories_grupox(grupo, url_changed=False):
     result = requests.get(url, headers=headers_)
     return result
 
+
+# ENVIA PRODUCTOS QUE PIDE UN GRUPO
+"""SE DEBE ENTREGAR CON OC"""
 def post_orders_grupox(grupo, cantidad, sku, url_changed=False):
     if not url_changed:
         url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
@@ -436,6 +446,7 @@ def post_orders_grupox(grupo, cantidad, sku, url_changed=False):
     body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion']}
     result = requests.post(url, headers=headers_, data=json.dumps(body))
     return result
+
 
 # FABRICA PRODUCTOS PROCESADOS EN CASO DE NO CUMPLIR STOCK
 # REVISA QUE SE TENGAN MATERIAS PRIMAS PARA FABRICAR
@@ -456,8 +467,8 @@ def enviar_fabricar():
                 cuantificador = parte1 + 1
             else: # si no hay resto la cantidad es precisa
                 cuantificador = parte1
-             # booleano que se setea si no se puede pedir
 
+            # booleano que se setea si no se puede pedir
             for i in range(cuantificador):
 
                 se_puede_pedir = True
