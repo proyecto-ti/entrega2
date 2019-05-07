@@ -1,0 +1,41 @@
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+
+    <title>Como integrar Django y Bootstrap 4 </title>
+
+  	  {# Cargamos la librería #}
+	  {% load bootstrap4 %}
+
+	  {# CSS Bootstrap #}
+	  {% bootstrap_css %}
+
+
+</head>
+
+<table class="table">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">NOMBRE</th>
+      <th scope="col">SKU</th>
+      <th scope="col">STOCK_MINIMO</th>
+      <th scope="col">CANTIDAD_ACTUAL</th>
+      <th scope="col">PORCENTAJE</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in query %}
+    <tr>
+      <th align = "left"> {{item.name}} </th>
+      <th align = "left"> {{item.sku}} </th>
+      <th align = "left"> {{item.stock_minimo}} </th>
+      <th align = "left"> {{item.cantidad_actual}} </th>
+      <th align = "left"> {{item.porcentaje}} </th>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
