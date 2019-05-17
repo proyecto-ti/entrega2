@@ -100,35 +100,15 @@ def update_dictionary_stocks(dictionary, stock_type):
             dictionary[sku["_id"]] += sku["total"]
     return dictionary
 
-def stock_fixed():
-    stock_recepcion = obtener_sku_con_stock(almacen_id_dict['recepcion'])
-    print("Stock recepcion")
-    print(type(stock_recepcion))
-    print(stock_recepcion)
+#RETORNA UNA LISTA CON LOS ID Y EL STOCK DE LOS PRODUCTOS DETERMINADOS EN CADA ALMACEN
+def stock_fixed(almacen):
+    if almacenJ
     stock_almacen_1 = obtener_sku_con_stock(almacen_id_dict['almacen_1'])
-    print("Stock almacen 1")
-    print(type(stock_almacen_1))
-    print(stock_almacen_1)
     stock_almacen_2 = obtener_sku_con_stock(almacen_id_dict['almacen_2'])
-    print("Stock almacen 2")
-    print(type(stock_almacen_2))
-    print(stock_almacen_2)
     stock_pulmon = obtener_sku_con_stock(almacen_id_dict['pulmon'])
-    print("Stock pulmon")
-    print(type(stock_pulmon))
-    print(stock_pulmon)
-    #print("Recepcion", stock_recepcion)
-    #print("Almacen 1", stock_almacen_1)
-    #print("Almacen 2", stock_almacen_2)
-    #print("Pulmon", stock_pulmon)
 
     #[{'_id': '1012', 'total': 1}, {'_id': '1310', 'total': 48},
     dict_response = dict()
-    for item in stock_recepcion:
-        if item["_id"] in dict_response.keys():
-            dict_response[item["_id"]] += item["total"]
-        else:
-            dict_response[item["_id"]] = item["total"]
     for item in stock_almacen_1:
         if item["_id"] in dict_response.keys():
             dict_response[item["_id"]] += item["total"]
@@ -492,6 +472,47 @@ def enviar_fabricar():
             pass
     else:
         pass
+def mover_entre_almacenes_por_id(productoId, almacenId_destino):
+    message = 'POST' + productoId + almacenId_destino
+    url = '{}moveStock'.format(api_url_base)
+    headers_ = {'Content-Type': 'application/json',
+                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    body = {"productoId": productoId, "almacenId": almacen_id_dict[almacenId_destino]}
+
+    requests.post(url, headers=headers_, data=json.dumps(body))
+
+#Cocinar un producto elaborado NO TESTEADA
+#da prioridad a sacar elementos de pulmon>almacen2>almacen1
+def cocinar_prod_sku(sku, cantidad):
+    receta = productos[sku]['receta']
+
+    #Se obtienen los id y ubicación de cada sku y se guardan en skus_almacenes_ids
+    skus_almacenes_ids = dict() #Se guardarán de la forma {'sku':{'pulmon': [12,43,54], 'almacen_1':[32,45,12]}}
+    for sku_receta in receta.keys(): #iteramos buscando los productos en las bodegas
+        skus_almacenes_ids[sku] = dict()
+        faltante = receta[sku_receta] #indica las unidades de un SKU que faltan por encontrar
+        almacenes = ["pulmon","almacen_2","almacen_1"]
+        for almacen in almacenes:
+            productos = obtener_productos_almacen(almacen_id_dict[almacen], sku_receta) #retorna todos los id del sku buscado
+            if len(productos>0): #si esque hay productos registra el almacen y los guarda hasta llegar al limite
+                skus_almacenes_ids[sku][almacen] = list()
+                for item in productos: #itera sobre cada producto individual, guardando su id
+                    skus_almacenes_ids[sku][almacen].append(item['_id'])
+                    faltante -= 1 #disminuye en 1 los faltantes
+                    if faltante == 0: #sale del loop
+                        break
+                if faltante == 0: #continua al siguiente sku
+                    break
+        #Si se llega a este punto, significa que no se encontraron suficientes elementos de un sku
+        return False
+
+    #se envian todos los productos a cocina
+    for sku in skus_almacenes_ids.keys():
+        for almacen in skus_almacenes_ids[sku].keys():
+            for id in skus_almacenes_ids[sku][almacen]:
+                mover_entre_almacenes_por_id(id, almacen_id_dict["cocina"])
+    #Se envian ingredientes a producir
+    return fabricarSinPago(sku, cantidad)
 
 
 def vaciar_almacen_despacho(todos_productos):
