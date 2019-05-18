@@ -487,7 +487,7 @@ class ListaFijaVencimiento:
         self.max_size = max_size
         self.list = list()
 
-    def insertar(self, new_elem):
+    def check_and_insert(self, new_elem):
         index = 0
         for inserted_elem in self.list:
             if new_elem["vencimiento"] <= inserted_elem["vencimiento"]:
