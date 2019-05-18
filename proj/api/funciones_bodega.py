@@ -4,7 +4,7 @@ import hmac
 import base64
 import json
 import math
-import random
+from .datos import *
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
@@ -448,34 +448,26 @@ def mover_entre_almacenes_por_id(productoId, almacenId_destino):
     requests.post(url, headers=headers_, data=json.dumps(body))
 
 #Cocinar un producto elaborado NO TESTEADA
-#da prioridad a sacar elementos de pulmon>almacen2>almacen1
+#da prioridad a sacar elementos de recepcion>pulmon>almacen2>almacen1
 def cocinar_prod_sku(sku, cantidad):
     receta = productos[sku]['receta']
-
-    #Se obtienen los id y ubicación de cada sku y se guardan en skus_almacenes_ids
-    skus_almacenes_ids = dict() #Se guardarán de la forma {'sku':{'pulmon': [12,43,54], 'almacen_1':[32,45,12]}}
-    for sku_receta in receta.keys(): #iteramos buscando los productos en las bodegas
-        skus_almacenes_ids[sku] = dict()
-        faltante = receta[sku_receta] #indica las unidades de un SKU que faltan por encontrar
-        almacenes = ["recepcion","almacen_2","almacen_1", "pulmon"]
+    #Se obtienen los id y ubicación de cada sku y se guardan en skus_ids
+    skus_ids = dict() #Se guardarán de la forma {'sku': [12,43,54], 'sku':[32,45,12]}
+    for sku_receta in receta.keys(): #iteramos buscando los productos en los almacenes
+        lista_ids = ListaFijaVencimiento(receta[sku_receta]) #creamos una lista de tamaño fijo con la cantidad de ese producto necesario
+        almacenes = ["recepcion","pulmon","almacen_2","almacen_1"]
         for almacen in almacenes:
             productos = obtener_productos_almacen(almacen_id_dict[almacen], sku_receta) #retorna todos los id del sku buscado
-            if len(productos>0): #si esque hay productos registra el almacen y los guarda hasta llegar al limite
-                skus_almacenes_ids[sku][almacen] = list()
-                for item in productos: #itera sobre cada producto individual, guardando su id
-                    skus_almacenes_ids[sku][almacen].append(item['_id'])
-                    faltante -= 1 #disminuye en 1 los faltantes
-                    if faltante == 0: #sale del loop
-                        break
-                if faltante == 0: #continua al siguiente sku
-                    break
-        #Si se llega a este punto, significa que no se encontraron suficientes elementos de un sku
-        return False
+            for item in productos: #itera sobre cada producto individual, guardando su id
+                lista_ids.check_and_insert(item)
+        if lista_ids.cantidad() == receta[sku_receta]: #si se tiene todos los elementos necesarios, se guarda una lista de sus ids
+            skus_ids[sku_receta] = lista_ids.ids()
+        else: #si no se cumple con la cantidad, entonces se retorna falso
+            return False
     #se envian todos los productos a cocina
-    for sku in skus_almacenes_ids.keys():
-        for almacen in skus_almacenes_ids[sku].keys():
-            for id in skus_almacenes_ids[sku][almacen]:
-                mover_entre_almacenes_por_id(id, almacen_id_dict["cocina"])
+    for sku in skus_ids.keys():
+        for id in skus_ids[sku]:
+            mover_entre_almacenes_por_id(id, almacen_id_dict["cocina"])
     #Se envian ingredientes a producir
     return fabricarSinPago(sku, cantidad)
 
@@ -506,6 +498,9 @@ class ListaFijaVencimiento:
         for elem in self.list:
             ids.append(elem["_id"])
         return ids
+
+    def cantidad(self):
+        return len(self.list)
 
 
 def vaciar_almacen_despacho(todos_productos):
