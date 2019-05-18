@@ -454,13 +454,13 @@ def cocinar_prod_sku(sku, cantidad):
     #Se obtienen los id y ubicación de cada sku y se guardan en skus_ids
     skus_ids = dict() #Se guardarán de la forma {'sku': [12,43,54], 'sku':[32,45,12]}
     for sku_receta in receta.keys(): #iteramos buscando los productos en los almacenes
-        lista_ids = ListaFijaVencimiento(receta[sku_receta]) #creamos una lista de tamaño fijo con la cantidad de ese producto necesario
+        lista_ids = ListaFijaVencimiento(receta[sku_receta]*cantidad) #creamos una lista de tamaño fijo con la cantidad de ese producto necesario
         almacenes = ["recepcion","pulmon","almacen_2","almacen_1"]
         for almacen in almacenes:
             productos = obtener_productos_almacen(almacen_id_dict[almacen], sku_receta) #retorna todos los id del sku buscado
             for item in productos: #itera sobre cada producto individual, guardando su id
                 lista_ids.check_and_insert(item)
-        if lista_ids.cantidad() == receta[sku_receta]: #si se tiene todos los elementos necesarios, se guarda una lista de sus ids
+        if lista_ids.cantidad() == receta[sku_receta]*cantidad: #si se tiene todos los elementos necesarios, se guarda una lista de sus ids
             skus_ids[sku_receta] = lista_ids.ids()
         else: #si no se cumple con la cantidad, entonces se retorna falso
             return False
