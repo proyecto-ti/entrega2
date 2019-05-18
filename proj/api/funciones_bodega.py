@@ -4,7 +4,7 @@ import hmac
 import base64
 import json
 import math
-from .datos import *
+import random
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
@@ -99,40 +99,6 @@ def update_dictionary_stocks(dictionary, stock_type):
         else:
             dictionary[sku["_id"]] += sku["total"]
     return dictionary
-
-#RETORNA UNA LISTA CON LOS ID Y EL STOCK DE LOS PRODUCTOS DETERMINADOS EN CADA ALMACEN
-def stock_fixed(almacen):
-    if almacenJ
-    stock_almacen_1 = obtener_sku_con_stock(almacen_id_dict['almacen_1'])
-    stock_almacen_2 = obtener_sku_con_stock(almacen_id_dict['almacen_2'])
-    stock_pulmon = obtener_sku_con_stock(almacen_id_dict['pulmon'])
-
-    #[{'_id': '1012', 'total': 1}, {'_id': '1310', 'total': 48},
-    dict_response = dict()
-    for item in stock_almacen_1:
-        if item["_id"] in dict_response.keys():
-            dict_response[item["_id"]] += item["total"]
-        else:
-            dict_response[item["_id"]] = item["total"]
-    for item in stock_almacen_2:
-        if item["_id"] in dict_response.keys():
-            dict_response[item["_id"]] += item["total"]
-        else:
-            dict_response[item["_id"]] = item["total"]
-    for item in stock_pulmon:
-        if item["_id"] in dict_response.keys():
-            dict_response[item["_id"]] += item["total"]
-        else:
-            dict_response[item["_id"]] = item["total"]
-
-    datos = productos()
-    list_skus = dict_response.keys()
-    list_response = list()
-    for sku in list_skus:
-        if sku in sku_producidos:
-            list_response.append({"sku": sku, "nombre": datos[sku]["nombre"], "total": dict_response[sku]})
-    #print(list_response)
-    return list_response
 
 
 def stock(view = False):
@@ -491,7 +457,7 @@ def cocinar_prod_sku(sku, cantidad):
     for sku_receta in receta.keys(): #iteramos buscando los productos en las bodegas
         skus_almacenes_ids[sku] = dict()
         faltante = receta[sku_receta] #indica las unidades de un SKU que faltan por encontrar
-        almacenes = ["pulmon","almacen_2","almacen_1"]
+        almacenes = ["recepcion","almacen_2","almacen_1", "pulmon"]
         for almacen in almacenes:
             productos = obtener_productos_almacen(almacen_id_dict[almacen], sku_receta) #retorna todos los id del sku buscado
             if len(productos>0): #si esque hay productos registra el almacen y los guarda hasta llegar al limite
@@ -505,7 +471,6 @@ def cocinar_prod_sku(sku, cantidad):
                     break
         #Si se llega a este punto, significa que no se encontraron suficientes elementos de un sku
         return False
-
     #se envian todos los productos a cocina
     for sku in skus_almacenes_ids.keys():
         for almacen in skus_almacenes_ids[sku].keys():
@@ -513,6 +478,34 @@ def cocinar_prod_sku(sku, cantidad):
                 mover_entre_almacenes_por_id(id, almacen_id_dict["cocina"])
     #Se envian ingredientes a producir
     return fabricarSinPago(sku, cantidad)
+
+
+# FUNCIONES AUXILIARES
+#Esta función se usa para mantener una lista con tamaño fijo, ordenada
+class ListaFijaVencimiento:
+    def __init__(self, max_size):
+        self.max_size = max_size
+        self.list = list()
+
+    def insertar(self, new_elem):
+        index = 0
+        for inserted_elem in self.list:
+            if new_elem["vencimiento"] <= inserted_elem["vencimiento"]:
+                self.list.insert(index, new_elem)
+                actual_size = len(self.list)
+                if actual_size > self.max_size:
+                    self.list.pop()
+                break
+            index += 1
+        actual_size = len(self.list)
+        if actual_size < self.max_size:
+            self.list.append(new_elem)
+
+    def ids(self):
+        ids = list()
+        for elem in self.list:
+            ids.append(elem["_id"])
+        return ids
 
 
 def vaciar_almacen_despacho(todos_productos):
