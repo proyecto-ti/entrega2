@@ -4,10 +4,12 @@ import hmac
 import base64
 import json
 import math
+import time
 from .datos import *
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
+api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 
 almacen_id_dict = {"recepcion" : "5cc7b139a823b10004d8e6d3",
                     "despacho" : "5cc7b139a823b10004d8e6d4",
@@ -22,7 +24,16 @@ sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" 
                     "1210" : 150,"1112" : 130,"1108" : 10,"1407" : 40,"1207" : 20,
                     "1107" : 50,"1307" : 170,"1211" : 60}
 
-sku_producidos = ["1011", "1016", "1006","1003","1001"]
+sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"]
+
+# AMBIENTE DE DESARROLLO
+id_grupos = {1: "5cbd31b7c445af0004739be3", 2: "5cbd31b7c445af0004739be4", 3: "5cbd31b7c445af0004739be5",
+             4: "5cbd31b7c445af0004739be6", 5: "5cbd31b7c445af0004739be7", 6: "5cbd31b7c445af0004739be8",
+             7: "5cbd31b7c445af0004739be9", 8: "5cbd31b7c445af0004739bea", 9: "5cbd31b7c445af0004739beb",
+             10: "5cbd31b7c445af0004739bec", 11: "5cbd31b7c445af0004739bed", 12: "5cbd31b7c445af0004739bee",
+             13: "5cbd31b7c445af0004739bef", 14: "5cbd31b7c445af0004739bf0"}
+
+
 
 
 ###FUNCION DE HASH NO UTILIZAR###
@@ -41,6 +52,69 @@ def sign_request(string):
     encoded = str(encoded, 'UTF-8')
     return encoded
 
+
+# METODOS DE OC
+def anular_oc(id_oc, motivo_anulacion):
+    message = 'DELETE'
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    url = '{}crear'.format(api_oc_url_base)
+    body = {"id": id_oc, "anulacion": motivo_anulacion}
+
+    result = requests.delete(url, headers=headers, data=json.dumps(body))
+    return result.json()
+
+
+def crear_oc(grupo_proveedor, sku, cantidad, preciounitario, canal):
+    message = 'PUT'
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    url = '{}crear'.format(api_oc_url_base)
+    body = {"cliente": id_grupos[2], "proveedor": id_grupos[grupo_proveedor], "sku": sku, "fechaEntrega": int(time.time()*1000+10*60*1000),
+            "cantidad": int(cantidad), "precioUnitario": preciounitario, "canal": canal}
+
+    result = requests.put(url, headers=headers, data=json.dumps(body))
+    return result.json()
+
+
+def obtener_oc(id_oc):
+    message = 'GET'
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    url = '{}obtener/{}'.format(api_oc_url_base, id_oc)
+    result = requests.get(url, headers=headers)
+    return result.json()
+
+
+def recepcionar_oc(id_oc):
+    message = 'POST'
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    url = '{}recepcionar/{}'.format(api_oc_url_base, id_oc)
+    body = {"id": id_oc}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result.json()
+
+
+def rechazar_oc(id_oc, motivo_rechazo):
+    message = 'POST'
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    url = '{}rechazar/{}'.format(api_oc_url_base, id_oc)
+    body = {"id": id_oc, "rechazo": motivo_rechazo}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result.json()
+
+print(crear_oc(3, 1006, 3, 1000, "b2b"))
+print(obtener_oc("5cdf2ec978171f00042fb823"))
+print(recepcionar_oc("5cdf2ec978171f00042fb823"))
+print(rechazar_oc("5cdf336978171f00042fb831", "hola"))
+print(anular_oc("5cdf346478171f00042fb833", "chao"))
+
+
+
+
+
 #ENTREGA SKU DE PRODUCTOS CON STOCK EN UN ALMACEN Y SU CANTIDAD
 def obtener_sku_con_stock(almacenId):
     message = 'GET' + almacenId
@@ -49,6 +123,9 @@ def obtener_sku_con_stock(almacenId):
     url = '{}skusWithStock?almacenId={}'.format(api_url_base, almacenId)
     result = requests.get(url, headers=headers).json()
     return result
+
+#for almacen in almacen_id_dict:
+#    print(obtener_sku_con_stock(almacen_id_dict[almacen]))
 
 # ENTREGA EL TIPO DE ALMACEN, CAPACIDAD Y ESPACIO USADO
 def revisarBodega():
@@ -60,7 +137,6 @@ def revisarBodega():
     result = requests.get(url, headers=headers)
     return result
 
-#print(revisarBodega().json())
 #for almacen in revisarBodega().json():
 #    print(obtener_sku_con_stock(almacen['_id']))
 
@@ -78,6 +154,7 @@ def entregar_id_almacen(almacen):
 #print(entregar_id_almacen("recepcion"))
 
 # FABRICA PRODUCTOS PROCESADOS SI SE TIENEN LAS MATERIAS PRIMAS NECESARIAS EN EL DESPACHO
+
 def fabricarSinPago(sku, cantidad):
     message = 'PUT' + sku + str(cantidad)
     url = '{}fabrica/fabricarSinPago'.format(api_url_base)
@@ -86,10 +163,14 @@ def fabricarSinPago(sku, cantidad):
     body = {"sku": sku, "cantidad": int(cantidad)}
 
     result = requests.put(url, headers=headers, data=json.dumps(body))
-    if result.status_code == 200:
-        return result.json()
-    else:
-        return result.json()
+    return result.json()
+
+    #if result.status_code == 200:
+    #    return result.json()
+    #else:
+    #    return result.json()
+
+#print(fabricarSinPago("1006", 10))
 
 ######TODO ESTO ES PARA INVENTORIES GET
 def update_dictionary_stocks(dictionary, stock_type):
