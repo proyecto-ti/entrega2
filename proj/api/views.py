@@ -7,7 +7,7 @@ from .funciones_bodega import *
 from .datos import *
 import json
 from django.shortcuts import render, render_to_response
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, HttpResponse
 
 name_sku_dict = {"Sesamo": "1011",
                 "Nori_Entero": "1016",
@@ -28,10 +28,12 @@ sku_stock_dict = {  "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" :
                     "1210" : 150,"1112" : 130,"1108" : 10,"1407" : 40,"1207" : 20,
                     "1107" : 50,"1307" : 170,"1211" : 60}
 
+
 def inventories_view(request):
     lista = stock()
     query = {"query": lista}
     return render_to_response('inventoriestotal.html', query)
+
 
 def bodegas_view(request):
     lista = []
@@ -41,6 +43,7 @@ def bodegas_view(request):
 
     query = {"query": lista}
     return render_to_response('bodegas.html', query)
+
 
 def estadisticas_view(request):
     datos = productos()
@@ -64,12 +67,14 @@ def estadisticas_view(request):
     query = {"query": lista_}
     return render_to_response('index.html', query)
 
+
 class InventoriesView(APIView):
     def get(self, request):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
         lista = stock_fixed()
         return JsonResponse(lista, status=200, safe=False)
+
 
 # Cuando hagan post con POSTMAN hay que ponerle un / al final de la URL, así:
 # http://127.0.0.1:8000/api/orders/
@@ -89,3 +94,18 @@ class OrdersView(APIView):
             mover_entre_bodegas(sku, cantidad, almacenId)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
             return JsonResponse(dictionary, status=200, safe=False)
+
+
+class OCView(APIView):
+    def post(self, request, oc_id):
+        #FUNCION ENDOPOINT DE OC
+        status = request.data.get("status")
+        #print(status)
+        #print(oc_id)
+        if status == "accept":
+            # se va a recibir el pedido
+            pass
+        elif status == "reject":
+            # el pedido fue rechazado
+            pass
+        return HttpResponse(status=204)
