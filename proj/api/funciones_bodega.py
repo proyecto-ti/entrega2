@@ -39,7 +39,7 @@ id_grupos_prod = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 
              4: "5cc66e378820160004a4c3bf", 5: "5cc66e378820160004a4c3c0", 6: "5cc66e378820160004a4c3c1",
              7: "5cc66e378820160004a4c3c2", 8: "5cc66e378820160004a4c3c3", 9: "5cc66e378820160004a4c3c4",
              10: "5cc66e378820160004a4c3c5", 11: "5cc66e378820160004a4c3c6", 12: "5cc66e378820160004a4c3c7",
-             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"} 
+             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"}
 """
 
 
@@ -477,6 +477,20 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
 
 
 # LLAMA A calcular_cantidad_comprar RESTANDO LAS MATERIAS PRIMAS DEL INVENTARIO
+pedidos = [] # lista de oc
+def definir_stock_virtual(stock_actual):
+    dict_stock_virtual_materias_primas = {}
+    for oc in pedidos:
+        sku = oc["sku"]
+        cantidad = 0
+        if sku in dict_stock_virtual_materias_primas:
+            dict_stock_virtual_materias_primas[sku] += oc["cantidad"]
+        else:
+            dict_stock_virtual_materias_primas[sku] = oc["cantidad"]
+    return dict_stock_virtual_materias_primas
+
+
+
 def generar_dict_compras():
     datos_productos = productos()
     stock_actual = stock()
@@ -485,14 +499,15 @@ def generar_dict_compras():
     #print("\t2.2")
     dict_compra_final = calcular_cantidad_comprar(datos_productos, calcular_stock_unidades_)
 
+    dict_stock_virtual_materias_primas = definir_stock_virtual(stock_actual)
+
     for materias_primas in stock_actual:
         sku = materias_primas['sku']
         if sku in dict_compra_final:
-            if dict_compra_final[sku] < materias_primas['total']:
+            if dict_compra_final[sku] < materias_primas['total'] + dict_stock_virtual_materias_primas[sku]
                 del dict_compra_final[sku]
             else:
-                dict_compra_final[sku] -= materias_primas['total']
-
+                dict_compra_final[sku] -= materias_primas['total'] + dict_stock_virtual_materias_primas[sku]
     return dict_compra_final
 
 ########
