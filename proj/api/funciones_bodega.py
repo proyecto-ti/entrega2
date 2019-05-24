@@ -519,11 +519,8 @@ def cantidad_sku_grupox(grupo, sku):
             return elem["total"]
     return 0
 
-def post_orders_grupox(grupo, oc_id, cantidad, sku, url_changed=False):
-    if not url_changed:
-        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
-    else:
-        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/'
+def post_orders_grupox(grupo, oc_id, cantidad, sku):
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/'
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
     body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion'], 'oc': oc_id}
     result = requests.post(url, headers=headers_, data=json.dumps(body))
@@ -623,7 +620,7 @@ def vaciar_almacen_despacho(todos_productos):
 def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
     json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=1, canal = 'b2b')
     oc_id = json_crear_oc["_id"]
-    response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku, url_changed=False)
+    response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku)
     #TENEMOS QUE PREOCUPARNOS DE LA RESPONSE????
     pedidos_nuestros.append({"sku": sku, "oc": oc_id, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+10*60*1000)})
     return
