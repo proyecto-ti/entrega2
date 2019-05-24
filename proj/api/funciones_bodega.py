@@ -83,7 +83,7 @@ def crear_oc(grupo_proveedor, sku, cantidad, preciounitario, canal):
     url = '{}crear'.format(api_oc_url_base)
     body = {"cliente": id_grupos[2], "proveedor": id_grupos[grupo_proveedor], "sku": sku, "fechaEntrega": int(time.time()*1000+10*60*1000),
             "cantidad": int(cantidad), "precioUnitario": preciounitario, "canal": canal, "urlNotificacion":
-                "tuerca2.ing.puc.cl/oc/<str:oc_id>/notification/"}
+                "http://tuerca2.ing.puc.cl/oc/{_id}/notification/"}
 
     result = requests.put(url, headers=headers, data=json.dumps(body))
     return result.json()
@@ -621,7 +621,9 @@ def vaciar_almacen_despacho(todos_productos):
 # Esta función crea un pedido a un grupo con su respectiva orden de compra y
 # pone la orden en "pedidos_nuestros" para que se mantenga al tanto
 def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
-    json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=0, canal = 'b2b')
+    json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=1, canal = 'b2b')
+    print("Se imprime json_crear_oc:")
+    print(json_crear_oc)
     id_oc = json_crear_oc["_id"]
     response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku, url_changed=False)
     #TENEMOS QUE PREOCUPARNOS DE LA RESPONSE????
@@ -633,18 +635,26 @@ def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
 # encargará en "pedidos_nuestros_celery_control" en caso de que no nos respondan
 # si hay un rechazo se encarga el metodo de "view.py"
 def iniciar_orden(sku, cantidad, pedidos_nuestros):
+    print("SE INICIA PEDIDO")
     datos = productos()
     productores = datos[sku]["productores"]
 
     cantidad
     for grupo in productores:
         c_disponible = cantidad_sku_grupox(grupo, sku)
+        print("grupo: "+str(grupo)+" C_disponible: "+str(c_disponible))
         if c_disponible > 0 and grupo != 2:
             if cantidad <= c_disponible:
                 pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
+                print("-pedido completado")
+                print(pedidos_nuestros)
             else:
                 pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
                 cantidad -= c_disponible
+                print("-falta aún")
+                print(pedidos_nuestros)
+
+iniciar_orden("1007", 10, pedidos_nuestros)
 
 # Este metodo toma un pedido cuyo tiempo de respuesta expiró y busca otros proveedores para esa cantidad de elementos
 # FALTA que vuelva a poner la orden para los grupos 1 en adelante una vez que ya intentó pedirselo a todos
