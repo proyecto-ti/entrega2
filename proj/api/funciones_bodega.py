@@ -5,7 +5,7 @@ import base64
 import json
 import math
 import time
-from .datos import *
+from datos import *
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
@@ -105,11 +105,7 @@ def rechazar_oc(id_oc, motivo_rechazo):
     result = requests.post(url, headers=headers, data=json.dumps(body))
     return result.json()
 
-print(crear_oc(3, 1006, 3, 1000, "b2b"))
-print(obtener_oc("5cdf2ec978171f00042fb823"))
-print(recepcionar_oc("5cdf2ec978171f00042fb823"))
-print(rechazar_oc("5cdf336978171f00042fb831", "hola"))
-print(anular_oc("5cdf346478171f00042fb833", "chao"))
+
 
 
 
