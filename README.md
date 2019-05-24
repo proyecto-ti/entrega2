@@ -1,4 +1,15 @@
-#CABROS URGENTE NO TENGO CEL MANDENME EL MEET
+# CABROS URGENTE NO TENGO CEL MANDENME EL MEET https://meet.google.com/ssv-tavp-zgu
+
+# CABROS URGENTE NO TENGO CEL MANDENME EL MEET https://meet.google.com/ssv-tavp-zgu
+
+# CABROS URGENTE NO TENGO CEL MANDENME EL MEET https://meet.google.com/ssv-tavp-zgu
+
+# CABROS URGENTE NO TENGO CEL MANDENME EL MEET https://meet.google.com/ssv-tavp-zgu
+
+# CABROS URGENTE NO TENGO CEL MANDENME EL MEET https://meet.google.com/ssv-tavp-zgu
+
+# NO TENGO CELULAR!!!!!!!!
+
 
 # DOCKERS
 
