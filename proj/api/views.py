@@ -107,11 +107,21 @@ class OCView(APIView):
         #SE LLAMA CUANDO PEDIMOS A OTRO GRUPO
         status = request.data.get("status")
         grupo_id = obtener_oc(oc_id)["proveedor"]
-        #print(status)
-        #print(oc_id)
+        # Se va a recibir el pedido
         if status == "accept":
-            # se va a recibir el pedido
+            # Quitamos el track a la orden de compra en "pedidos nuestros"
+            for index in range(0, len(pedidos_nuestros)):
+                if pedidos_nuestros[index]["oc"] == oc_id:
+                    del pedidos_nuestros[index]
+
             return HttpResponse(status=204)
+            
+        # El pedido fue rechazado
         elif status == "reject":
-            # el pedido fue rechazado
+            for index in range(0, len(pedidos_nuestros)):
+                if pedidos_nuestros[index]["oc"] == oc_id:
+                    i_pedido = index
+                    break
+            pedir_siguiente_proveedor(i_pedido, pedidos_nuestros)
+            del pedidos_nuestros[i_pedido]
             return HttpResponse(status=204)

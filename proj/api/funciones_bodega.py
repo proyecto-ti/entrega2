@@ -26,6 +26,8 @@ sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" 
 
 sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"]
 
+pedidos_nuestros = list()
+
 # AMBIENTE DE DESARROLLO
 id_grupos = {1: "5cbd31b7c445af0004739be3", 2: "5cbd31b7c445af0004739be4", 3: "5cbd31b7c445af0004739be5",
              4: "5cbd31b7c445af0004739be6", 5: "5cbd31b7c445af0004739be7", 6: "5cbd31b7c445af0004739be8",
@@ -39,7 +41,7 @@ id_grupos_prod = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 
              4: "5cc66e378820160004a4c3bf", 5: "5cc66e378820160004a4c3c0", 6: "5cc66e378820160004a4c3c1",
              7: "5cc66e378820160004a4c3c2", 8: "5cc66e378820160004a4c3c3", 9: "5cc66e378820160004a4c3c4",
              10: "5cc66e378820160004a4c3c5", 11: "5cc66e378820160004a4c3c6", 12: "5cc66e378820160004a4c3c7",
-             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"} 
+             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"}
 """
 
 
@@ -496,7 +498,33 @@ def generar_dict_compras():
     return dict_compra_final
 
 ########
+# BUSCA INVENTARIO DE UN GRUPO
+def get_inventories_grupox(grupo, url_changed=False):
+    if not url_changed:
+        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories'
+    else:
+        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories/'
 
+    headers_ = {'Content-Type': 'application/json', 'group': '2'}
+    result = requests.get(url, headers=headers_)
+    return result
+
+def cantidad_sku_grupox(grupo, sku):
+    inventario = get_inventories_grupox(grupo, url_changed=False)
+    for elem in inventario:
+        if elem['sku'] == sku:
+            return elem["total"]
+    return 0
+
+def post_orders_grupox(grupo, oc_id, cantidad, sku, url_changed=False):
+    if not url_changed:
+        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
+    else:
+        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/'
+    headers_ = {'Content-Type': 'application/json', 'group': '2'}
+    body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion'], 'oc': oc_id}
+    result = requests.post(url, headers=headers_, data=json.dumps(body))
+    return result
 
 # PIDE MATERIAS PRIMAS QUE NO PRODUZCA NUESTRO GRUPO
 # SE LE ENTREGA UN SKU Y UNA CANTDIAD
@@ -522,32 +550,6 @@ def pedir_productos_sku(sku, cantidad, url_changed=False):
     else:
         cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
         #print(fabricarSinPago(sku, cantidad))
-
-
-# BUSCA INVENTARIO DE UN GRUPO
-def get_inventories_grupox(grupo, url_changed=False):
-    if not url_changed:
-        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories'
-    else:
-        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories/'
-
-    headers_ = {'Content-Type': 'application/json', 'group': '2'}
-    result = requests.get(url, headers=headers_)
-    return result
-
-
-# ENVIA PRODUCTOS QUE PIDE UN GRUPO
-"""SE DEBE ENTREGAR CON OC"""
-def post_orders_grupox(grupo, cantidad, sku, url_changed=False):
-    if not url_changed:
-        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
-    else:
-        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/'
-
-    headers_ = {'Content-Type': 'application/json', 'group': '2'}
-    body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion']}
-    result = requests.post(url, headers=headers_, data=json.dumps(body))
-    return result
 
 
 # FABRICA PRODUCTOS PROCESADOS EN CASO DE NO CUMPLIR STOCK
@@ -608,16 +610,75 @@ def vaciar_almacen_despacho(todos_productos):
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
             print(result)
-#print(cantidad_producto("1006"))
 
-#print(stock())
-#enviar_fabricar()
-#print(stock())
-#mover_entre_almacenes("1006",86,almacen_id_dict["despacho"],almacen_id_dict["almacen_1"])
-#print(ObtenerSkuconStock(almacen_id_dict["despacho"]))
-#enviar_fabricar()
-#print(cantidad_producto("1106"))
-#print(cantidad_producto("1006"))
+###############################
+#### ENTREGA 2 - PEDIDOS ######
+###############################
+
+# Esta función crea un pedido a un grupo con su respectiva orden de compra y
+# pone la orden en "pedidos_nuestros" para que se mantenga al tanto
+def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
+    json_crear_oc = crear_oc(grupo_proveedor=grupo, sku, cantidad=cantidad, preciounitario=0, canal = 'b2b')
+    id_oc = json_crear_oc["_id"]
+    response = post_orders_grupox(grupo = grupo, oc_id, cantidad, sku, url_changed=False)
+    #TENEMOS QUE PREOCUPARNOS DE LA RESPONSE????
+    pedidos_nuestros.append({"sku": sku, "oc": id_oc, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+10*60*1000})
+    return
+
+# Pedir producto ENTREGA 2
+# Cuando queremos pedir un producto ejecutamos esta función. Luego celery se
+# encargará en "pedidos_nuestros_celery_control" en caso de que no nos respondan
+# si hay un rechazo se encarga el metodo de "view.py"
+def iniciar_orden(sku, cantidad, pedidos_nuestros):
+    datos = productos()
+    productores = datos[sku]["productores"]
+
+    cantidad
+    for grupo in productores:
+        c_disponible = cantidad_sku_grupox(grupo, sku)
+        if c_disponible > 0 and grupo != 2:
+            if cantidad <= c_disponible:
+                pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
+            else:
+                pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
+                cantidad -= c_disponible
+
+# Este metodo toma un pedido cuyo tiempo de respuesta expiró y busca otros proveedores para esa cantidad de elementos
+# FALTA que vuelva a poner la orden para los grupos 1 en adelante una vez que ya intentó pedirselo a todos
+def pedir_siguiente_proveedor(i_pedido, pedidos_nuestros):
+    productores = datos[pedidos_nuestros[i_pedido]["sku"]]["productores"] # busco los productores del sku
+    i_productor = productores.index(pedidos_nuestros[i_pedido]["grupo"])
+    sku = pedidos_nuestros[i_pedido]["sku"]
+    cantidad = pedidos_nuestros[i_pedido]["cantidad"]
+    while i_productor < len(productores)-1:
+        i_productor += 1
+        grupo = productores[i_productor]
+        c_disponible = cantidad_sku_grupox(grupo, sku)
+        if c_disponible > 0 and grupo != 2:
+            if cantidad <= c_disponible:
+                pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
+                break # ya habremos pedido todo lo necesario
+            else:
+                pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
+                cantidad -= c_disponible
+    return
+
+# este metodo debe estar corriendo constantemente revisando si es que hay algún
+# grupo que no nos haya respondido.
+def pedidos_nuestros_celery_control(pedidos_nuestros):
+    datos = productos()
+    i_to_delete = list() # en esta lista se agregan los indices a eliminar de la lista
+    for i_pedido in range(0, len(pedidos_nuestros)):
+        if int(time.time()*1000) > pedidos_nuestros[i_pedido]["fecha_pedido"]:
+            i_to_delete.append(i_pedido) # agrego a la lista el indice del elemento a eliminar
+            pedir_siguiente_proveedor(i_pedido, pedidos_nuestros)
+    #elimino los elementos seleccionados anteriormente
+    i_to_delete.reverse()
+    for i in i_to_delete:
+        del pedidos_nuestros[i]
+
+###################################################
+###################################################
 
 """
 def pedir_stock_minimo_grupos():
