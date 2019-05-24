@@ -477,10 +477,18 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
 
 
 # LLAMA A calcular_cantidad_comprar RESTANDO LAS MATERIAS PRIMAS DEL INVENTARIO
-pedidos = [] # lista de oc
+ordenes_aceptadas = [] # lista de oc
+ordenes_por_confirmar = []
 def definir_stock_virtual(stock_actual):
     dict_stock_virtual_materias_primas = {}
-    for oc in pedidos:
+    for oc in ordenes_por_confirmar:
+        sku = oc["sku"]
+        cantidad = 0
+        if sku in dict_stock_virtual_materias_primas:
+            dict_stock_virtual_materias_primas[sku] += oc["cantidad"]
+        else:
+            dict_stock_virtual_materias_primas[sku] = oc["cantidad"]
+    for oc in ordenes_aceptadas:
         sku = oc["sku"]
         cantidad = 0
         if sku in dict_stock_virtual_materias_primas:
