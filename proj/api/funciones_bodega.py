@@ -622,12 +622,10 @@ def vaciar_almacen_despacho(todos_productos):
 # pone la orden en "pedidos_nuestros" para que se mantenga al tanto
 def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
     json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=1, canal = 'b2b')
-    print("Se imprime json_crear_oc:")
-    print(json_crear_oc)
-    id_oc = json_crear_oc["_id"]
+    oc_id = json_crear_oc["_id"]
     response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku, url_changed=False)
     #TENEMOS QUE PREOCUPARNOS DE LA RESPONSE????
-    pedidos_nuestros.append({"sku": sku, "oc": id_oc, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+10*60*1000)})
+    pedidos_nuestros.append({"sku": sku, "oc": oc_id, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+10*60*1000)})
     return
 
 # Pedir producto ENTREGA 2
@@ -648,6 +646,7 @@ def iniciar_orden(sku, cantidad, pedidos_nuestros):
                 pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
                 print("-pedido completado")
                 print(pedidos_nuestros)
+                break
             else:
                 pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
                 cantidad -= c_disponible
