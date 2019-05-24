@@ -27,6 +27,7 @@ sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" 
 sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"]
 
 pedidos_nuestros = list()
+mins_espera_pedido = 5
 
 # AMBIENTE DE DESARROLLO
 id_grupos = {1: "5cbd31b7c445af0004739be3", 2: "5cbd31b7c445af0004739be4", 3: "5cbd31b7c445af0004739be5",
@@ -81,7 +82,7 @@ def crear_oc(grupo_proveedor, sku, cantidad, preciounitario, canal):
     headers = {'Content-Type': 'application/json',
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     url = '{}crear'.format(api_oc_url_base)
-    body = {"cliente": id_grupos[2], "proveedor": id_grupos[grupo_proveedor], "sku": sku, "fechaEntrega": int(time.time()*1000+10*60*1000),
+    body = {"cliente": id_grupos[2], "proveedor": id_grupos[grupo_proveedor], "sku": sku, "fechaEntrega": int(time.time()*1000+mins_espera_pedido*60*1000),
             "cantidad": int(cantidad), "precioUnitario": preciounitario, "canal": canal, "urlNotificacion":
                 "http://tuerca2.ing.puc.cl/oc/{_id}/notification/"}
 
@@ -622,7 +623,7 @@ def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
     oc_id = json_crear_oc["_id"]
     response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku)
     #TENEMOS QUE PREOCUPARNOS DE LA RESPONSE????
-    pedidos_nuestros.append({"sku": sku, "oc": oc_id, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+10*60*1000)})
+    pedidos_nuestros.append({"sku": sku, "oc": oc_id, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+mins_espera_pedido*60*1000)})
     return
 
 # Pedir producto ENTREGA 2
