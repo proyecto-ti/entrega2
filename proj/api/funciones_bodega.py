@@ -5,24 +5,24 @@ import base64
 import json
 import math
 import time
-from .datos import *
+from datos import *
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
 api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 
-almacen_id_dict = {"recepcion" : "5cc7b139a823b10004d8e6d3",
-                    "despacho" : "5cc7b139a823b10004d8e6d4",
-                    "almacen_1" : "5cc7b139a823b10004d8e6d5",
-                    "almacen_2" : "5cc7b139a823b10004d8e6d6",
-                    "pulmon" : "5cc7b139a823b10004d8e6d7",
-                    "cocina" : "5cc7b139a823b10004d8e6d8"}
+almacen_id_dict = {"recepcion": "5cc7b139a823b10004d8e6d3",
+                    "despacho": "5cc7b139a823b10004d8e6d4",
+                    "almacen_1": "5cc7b139a823b10004d8e6d5",
+                    "almacen_2": "5cc7b139a823b10004d8e6d6",
+                    "pulmon": "5cc7b139a823b10004d8e6d7",
+                    "cocina": "5cc7b139a823b10004d8e6d8"}
 
 sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" : 170,
-                    "1106" : 400,"1114" : 50,"1215" : 20,"1115" : 30,"1105" : 50,
-                    "1216" : 50,"1116" : 250,"1110" : 80,"1310" : 20,
-                    "1210" : 150,"1112" : 130,"1108" : 10,"1407" : 40,"1207" : 20,
-                    "1107" : 50,"1307" : 170,"1211" : 60}
+                    "1106": 400,"1114": 50,"1215" : 20,"1115" : 30,"1105" : 50,
+                    "1216": 50,"1116": 250,"1110" : 80,"1310" : 20,
+                    "1210": 150,"1112": 130,"1108" : 10,"1407" : 40,"1207" : 20,
+                    "1107": 50,"1307": 170,"1211" : 60}
 
 sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"]
 
@@ -32,6 +32,15 @@ id_grupos = {1: "5cbd31b7c445af0004739be3", 2: "5cbd31b7c445af0004739be4", 3: "5
              7: "5cbd31b7c445af0004739be9", 8: "5cbd31b7c445af0004739bea", 9: "5cbd31b7c445af0004739beb",
              10: "5cbd31b7c445af0004739bec", 11: "5cbd31b7c445af0004739bed", 12: "5cbd31b7c445af0004739bee",
              13: "5cbd31b7c445af0004739bef", 14: "5cbd31b7c445af0004739bf0"}
+
+# AMBIENTE DE PRODUCCION
+"""
+id_grupos_prod = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 3: "5cc66e378820160004a4c3be",
+             4: "5cc66e378820160004a4c3bf", 5: "5cc66e378820160004a4c3c0", 6: "5cc66e378820160004a4c3c1",
+             7: "5cc66e378820160004a4c3c2", 8: "5cc66e378820160004a4c3c3", 9: "5cc66e378820160004a4c3c4",
+             10: "5cc66e378820160004a4c3c5", 11: "5cc66e378820160004a4c3c6", 12: "5cc66e378820160004a4c3c7",
+             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"} 
+"""
 
 
 
@@ -72,7 +81,8 @@ def crear_oc(grupo_proveedor, sku, cantidad, preciounitario, canal):
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     url = '{}crear'.format(api_oc_url_base)
     body = {"cliente": id_grupos[2], "proveedor": id_grupos[grupo_proveedor], "sku": sku, "fechaEntrega": int(time.time()*1000+10*60*1000),
-            "cantidad": int(cantidad), "precioUnitario": preciounitario, "canal": canal}
+            "cantidad": int(cantidad), "precioUnitario": preciounitario, "canal": canal, "urlNotificacion":
+                "tuerca2.ing.puc.cl/oc/<str:oc_id>/notification/"}
 
     result = requests.put(url, headers=headers, data=json.dumps(body))
     return result
@@ -113,8 +123,19 @@ def rechazar_oc(id_oc, motivo_rechazo):
 #print(anular_oc("5cdf346478171f00042fb833", "chao"))
 
 
+def aviso_aceptar_pedido(oc, grupo):
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format_map(oc)
+    headers = {'Content-Type': 'application/json'}
+    body = {"status": "accept"}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result.json()
 
-
+def aviso_rechazar_pedido(oc, grupo):
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format_map(oc)
+    headers = {'Content-Type': 'application/json'}
+    body = {"status": "reject"}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result.json()
 
 #ENTREGA SKU DE PRODUCTOS CON STOCK EN UN ALMACEN Y SU CANTIDAD
 def obtener_sku_con_stock(almacenId):
@@ -140,6 +161,7 @@ def revisarBodega():
 
 #for almacen in revisarBodega().json():
 #    print(obtener_sku_con_stock(almacen['_id']))
+
 
 def entregar_id_almacen(almacen):
     revisar_bodega = revisarBodega()
@@ -428,10 +450,10 @@ def calcular_stock_unidades(stock_actual, diccionario):
                 dict_compras_cantidad[sku] = cantidad_pedir
     return dict_compras_cantidad
 
+
 # ENTREGA MATERIAS PRIMAS NECESARIAS PARA CUMPLIR STOCK MINIMO
 # SE VA ACTUALIZANDO EL DICCIONARIO HASTA LLEGAR A PRODUCTOS QUE NO TIENEN INGREDIENTES
 def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {}):
-
     for sku, cantidad in dict_comprar.items():
         if cantidad != 0:
             if dict_producto[str(sku)]['receta'] == {}:
