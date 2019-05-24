@@ -116,11 +116,11 @@ def rechazar_oc(id_oc, motivo_rechazo):
     body = {"id": id_oc, "rechazo": motivo_rechazo}
     result = requests.post(url, headers=headers, data=json.dumps(body))
     return result.json()
-
+"""
 print(crear_oc(3, 1006, 3, 1000, "b2b"))
 print(obtener_oc("5cdf2ec978171f00042fb823"))
 print(recepcionar_oc("5cdf2ec978171f00042fb823"))
-print(rechazar_oc("5cdf336978171f00042fb831", "hola"))
+print(rechazar_oc("5cdf336978171f00042fb831", "hola")) """
 #print(anular_oc("5cdf346478171f00042fb833", "chao"))
 
 def aviso_aceptar_pedido(oc, grupo):
@@ -506,8 +506,11 @@ def get_inventories_grupox(grupo, url_changed=False):
         url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories/'
 
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
-    result = requests.get(url, headers=headers_)
-    return result
+    try:
+        result = requests.get(url, headers=headers_)
+        return result.json()
+    except:
+        return list()
 
 def cantidad_sku_grupox(grupo, sku):
     inventario = get_inventories_grupox(grupo, url_changed=False)
@@ -515,6 +518,9 @@ def cantidad_sku_grupox(grupo, sku):
         if elem['sku'] == sku:
             return elem["total"]
     return 0
+
+for i in range(1,14):
+    print(str(i)+": "+str(cantidad_sku_grupox(i, "1007")))
 
 def post_orders_grupox(grupo, oc_id, cantidad, sku, url_changed=False):
     if not url_changed:
@@ -618,11 +624,11 @@ def vaciar_almacen_despacho(todos_productos):
 # Esta función crea un pedido a un grupo con su respectiva orden de compra y
 # pone la orden en "pedidos_nuestros" para que se mantenga al tanto
 def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
-    json_crear_oc = crear_oc(grupo_proveedor=grupo, sku, cantidad=cantidad, preciounitario=0, canal = 'b2b')
+    json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=0, canal = 'b2b')
     id_oc = json_crear_oc["_id"]
-    response = post_orders_grupox(grupo = grupo, oc_id, cantidad, sku, url_changed=False)
+    response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku, url_changed=False)
     #TENEMOS QUE PREOCUPARNOS DE LA RESPONSE????
-    pedidos_nuestros.append({"sku": sku, "oc": id_oc, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+10*60*1000})
+    pedidos_nuestros.append({"sku": sku, "oc": id_oc, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+10*60*1000)})
     return
 
 # Pedir producto ENTREGA 2
