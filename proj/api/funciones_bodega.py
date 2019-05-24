@@ -5,7 +5,7 @@ import base64
 import json
 import math
 import time
-from .datos import *
+from datos import *
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
@@ -80,7 +80,8 @@ def crear_oc(grupo_proveedor, sku, cantidad, preciounitario, canal):
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     url = '{}crear'.format(api_oc_url_base)
     body = {"cliente": id_grupos[2], "proveedor": id_grupos[grupo_proveedor], "sku": sku, "fechaEntrega": int(time.time()*1000+10*60*1000),
-            "cantidad": int(cantidad), "precioUnitario": preciounitario, "canal": canal}
+            "cantidad": int(cantidad), "precioUnitario": preciounitario, "canal": canal, "urlNotificacion":
+                "tuerca2.ing.puc.cl/oc/<str:oc_id>/notification/"}
 
     result = requests.put(url, headers=headers, data=json.dumps(body))
     return result.json()
@@ -120,9 +121,19 @@ print(recepcionar_oc("5cdf2ec978171f00042fb823"))
 print(rechazar_oc("5cdf336978171f00042fb831", "hola"))
 #print(anular_oc("5cdf346478171f00042fb833", "chao"))
 
+def aviso_aceptar_pedido(oc, grupo):
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format_map(oc)
+    headers = {'Content-Type': 'application/json'}
+    body = {"status": "accept"}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result.json()
 
-
-
+def aviso_rechazar_pedido(oc, grupo):
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format_map(oc)
+    headers = {'Content-Type': 'application/json'}
+    body = {"status": "reject"}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result.json()
 
 #ENTREGA SKU DE PRODUCTOS CON STOCK EN UN ALMACEN Y SU CANTIDAD
 def obtener_sku_con_stock(almacenId):
@@ -148,6 +159,7 @@ def revisarBodega():
 
 #for almacen in revisarBodega().json():
 #    print(obtener_sku_con_stock(almacen['_id']))
+
 
 def entregar_id_almacen(almacen):
     revisar_bodega = revisarBodega()
