@@ -640,13 +640,11 @@ def iniciar_orden(sku, cantidad, pedidos_nuestros):
         if c_disponible > 0 and grupo != 2:
             if cantidad <= c_disponible:
                 pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
-                print(pedidos_nuestros)
                 break
             else:
                 pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
                 cantidad -= c_disponible
-                print(pedidos_nuestros)
-#Testing                
+#Testing
 #print("Pedidos Nuestros:")
 #iniciar_orden("1007", 10, pedidos_nuestros)
 
