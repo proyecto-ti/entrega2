@@ -39,7 +39,7 @@ id_grupos_prod = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 
              4: "5cc66e378820160004a4c3bf", 5: "5cc66e378820160004a4c3c0", 6: "5cc66e378820160004a4c3c1",
              7: "5cc66e378820160004a4c3c2", 8: "5cc66e378820160004a4c3c3", 9: "5cc66e378820160004a4c3c4",
              10: "5cc66e378820160004a4c3c5", 11: "5cc66e378820160004a4c3c6", 12: "5cc66e378820160004a4c3c7",
-             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"} 
+             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"}
 """
 
 
@@ -376,7 +376,7 @@ def liberar_recepcion():
 
 
 # MUEVE LA CANTIDAD QUE SE QUIERA DE UN SKU HACIA EL ALMACEN DE DESPACHO
-def despachar_producto(sku, cantidad):
+def enviar_a_despacho(sku, cantidad):
     #cantidad que se ha envidado a despacho
     datos_bodegas = revisarBodega().json()
     capacidad_despacho = datos_bodegas[1]['totalSpace'] - datos_bodegas[1]['usedSpace']
@@ -427,6 +427,13 @@ def despachar_producto(sku, cantidad):
             break
     return
 
+def despachar_producto(prod_id, direccion, oc_id, precio=0):
+    message = 'DELETE' + prod_id + direccion + str(Precio) + oc_id
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    url = '{}stock'.format(api_url_base)
+    result = requests.delete(url, headers=headers).json()
+    return result
 
 #######FUNCION PARA EL STOCK MINIMO CUANTO TENGO QUE PEDIR DE CADA ELEMENTO
 def devolver_cantidad(stock_actual, sku1):
@@ -586,7 +593,7 @@ def enviar_fabricar():
 
                 if se_puede_pedir:
                     for sku in productos_[element]["receta"]:
-                        despachar_producto(str(sku), productos_[element]["receta"][sku])
+                        enviar_a_despacho(str(sku), productos_[element]["receta"][sku])
                     fabricarSinPago(element,lote)
 
                 else:
