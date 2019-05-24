@@ -9,6 +9,7 @@ urlpatterns = [
     path('inventories/', InventoriesView.as_view()),
     path('inventoriestotal/', inventories_view),
     path('orders/', OrdersView.as_view()),
+    path('oc/<str:oc_id>/notification/', OCView.as_view()),
     path('bodegas/', bodegas_view),
     path('', estadisticas_view)
 ]
