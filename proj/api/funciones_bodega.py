@@ -633,27 +633,19 @@ def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
 # encargará en "pedidos_nuestros_celery_control" en caso de que no nos respondan
 # si hay un rechazo se encarga el metodo de "view.py"
 def iniciar_orden(sku, cantidad, pedidos_nuestros):
-    print("SE INICIA PEDIDO")
     datos = productos()
     productores = datos[sku]["productores"]
 
     cantidad
     for grupo in productores:
         c_disponible = cantidad_sku_grupox(grupo, sku)
-        print("grupo: "+str(grupo)+" C_disponible: "+str(c_disponible))
         if c_disponible > 0 and grupo != 2:
             if cantidad <= c_disponible:
                 pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
-                print("-pedido completado")
-                print(pedidos_nuestros)
                 break
             else:
                 pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
                 cantidad -= c_disponible
-                print("-falta aún")
-                print(pedidos_nuestros)
-
-iniciar_orden("1007", 10, pedidos_nuestros)
 
 # Este metodo toma un pedido cuyo tiempo de respuesta expiró y busca otros proveedores para esa cantidad de elementos
 # FALTA que vuelva a poner la orden para los grupos 1 en adelante una vez que ya intentó pedirselo a todos
