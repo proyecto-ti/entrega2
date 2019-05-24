@@ -519,9 +519,6 @@ def cantidad_sku_grupox(grupo, sku):
             return elem["total"]
     return 0
 
-for i in range(1,14):
-    print(str(i)+": "+str(cantidad_sku_grupox(i, "1007")))
-
 def post_orders_grupox(grupo, oc_id, cantidad, sku, url_changed=False):
     if not url_changed:
         url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
