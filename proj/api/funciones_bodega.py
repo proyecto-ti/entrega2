@@ -635,18 +635,22 @@ def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
 def iniciar_orden(sku, cantidad, pedidos_nuestros):
     datos = productos()
     productores = datos[sku]["productores"]
-
-    cantidad
     for grupo in productores:
         c_disponible = cantidad_sku_grupox(grupo, sku)
         if c_disponible > 0 and grupo != 2:
             if cantidad <= c_disponible:
                 pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
+                print(pedidos_nuestros)
                 break
             else:
                 pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
                 cantidad -= c_disponible
+                print(pedidos_nuestros)
+#Testing                
+#print("Pedidos Nuestros:")
+#iniciar_orden("1007", 10, pedidos_nuestros)
 
+# Se ocupa como función auxiliar
 # Este metodo toma un pedido cuyo tiempo de respuesta expiró y busca otros proveedores para esa cantidad de elementos
 # FALTA que vuelva a poner la orden para los grupos 1 en adelante una vez que ya intentó pedirselo a todos
 def pedir_siguiente_proveedor(i_pedido, pedidos_nuestros):
