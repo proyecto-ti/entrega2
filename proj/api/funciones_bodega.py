@@ -1,3 +1,5 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
 import requests
 from hashlib import sha1
 import hmac
@@ -5,7 +7,9 @@ import base64
 import json
 import math
 import time
-from datos import *
+from .datos import *
+from django.shortcuts import render, render_to_response
+from django.http.response import JsonResponse, HttpResponse
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
@@ -121,19 +125,6 @@ print(recepcionar_oc("5cdf2ec978171f00042fb823"))
 print(rechazar_oc("5cdf336978171f00042fb831", "hola"))
 #print(anular_oc("5cdf346478171f00042fb833", "chao"))
 
-def aviso_aceptar_pedido(oc, grupo):
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format_map(oc)
-    headers = {'Content-Type': 'application/json'}
-    body = {"status": "accept"}
-    result = requests.post(url, headers=headers, data=json.dumps(body))
-    return result.json()
-
-def aviso_rechazar_pedido(oc, grupo):
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format_map(oc)
-    headers = {'Content-Type': 'application/json'}
-    body = {"status": "reject"}
-    result = requests.post(url, headers=headers, data=json.dumps(body))
-    return result.json()
 
 #ENTREGA SKU DE PRODUCTOS CON STOCK EN UN ALMACEN Y SU CANTIDAD
 def obtener_sku_con_stock(almacenId):
@@ -323,16 +314,47 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
 
         requests.post(url, headers=headers_, data=json.dumps(body))
 
-def mover_entre_bodegas(sku, cantidad, almacenId_destino, precio=0, oc=''):
+######################################
+#### ENTREGA 2 - ENVIAR PEDIDOS ######
+######################################
+
+
+# SE ACEPTA PEDIDO DE OTRO GRUPO
+def aviso_aceptar_pedido(oc, grupo):
+    recepcionar_oc(oc)
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
+    headers = {'Content-Type': 'application/json'}
+    body = {"status": "accept"}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result
+
+
+# SE RECHAZA PEDIDO DE OTRO GRUPO
+def aviso_rechazar_pedido(oc, grupo):
+    rechazar_oc(oc, "No hay stock del producto")
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
+    headers = {'Content-Type': 'application/json'}
+    body = {"status": "reject"}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result
+
+
+def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
     lista_id = obtener_id_producto(sku, cantidad, almacen_id_dict["despacho"])
     for productoId in lista_id:
         message = 'POST' + productoId + almacenId_destino
         url = '{}moveStockBodega'.format(api_url_base)
         headers_ = {'Content-Type': 'application/json',
                     'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
-        body = {"productoId": productoId, "almacenId": almacenId_destino}
+        body = {"productoId": productoId, "almacenId": almacenId_destino, "oc": oc, "precio": precio}
         respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
         return respuesta
+
+
+######################################
+#### ENTREGA 2 - ENVIAR PEDIDOS ######
+######################################
+
 
 # ENTREGA LA CANTIDAD DE UNIDADES QUE SE TIENEN DE UN SKU
 def cantidad_producto(sku):
@@ -347,28 +369,28 @@ def cantidad_producto(sku):
 #pedir_productos_sku('1001', 1)
 
 
-# MUEVE LOS PRODUCTOS DE LA RECEPCION AL ALMACEN 1 O ALMACEN 2
-def liberar_recepcion():
+# MUEVE LOS PRODUCTOS DE ALMACEN AL ALMACEN 1 O ALMACEN 2
+def liberar_almacen(almacen):
     #funcion que deja recepcion vacia, se mandan productos a almcanen1 o almacen2
     datos_bodegas = revisarBodega().json()
     #espacio en recepcion
     espacio_usado = datos_bodegas[0]['usedSpace']
     if espacio_usado == 0:
-        #recepcion ya esta vacia
+        #almacen ya esta vacion
         return
     else:
-        lista_recepcion = obtener_sku_con_stock(almacen_id_dict["recepcion"])
-        for producto in lista_recepcion:
+        lista_almacen = obtener_sku_con_stock(almacen_id_dict[almacen])
+        for producto in lista_almacen:
             #se actualizan datos de bodega
             datos_bodegas = revisarBodega().json()
             #revisa si cabe en almacen1
             if producto['total'] <= datos_bodegas[2]['totalSpace'] - datos_bodegas[2]['usedSpace']:
                 #traspasa todos esos productos a almacen1
-                mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict["recepcion"], almacen_id_dict["almacen_1"])
+                mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict[almacen], almacen_id_dict["almacen_1"])
             #revisa si cabe en almacen2
             elif producto['total'] <= datos_bodegas[3]['totalSpace'] - datos_bodegas[3]['usedSpace']:
                 #traspasa todos esos productos a almacen2
-                mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict["recepcion"], almacen_id_dict["almacen_2"])
+                mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict[almacen], almacen_id_dict["almacen_2"])
     return
 
 
