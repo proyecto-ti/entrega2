@@ -110,18 +110,20 @@ class OCView(APIView):
         # Se va a recibir el pedido
         if status == "accept":
             # Quitamos el track a la orden de compra en "pedidos nuestros"
-            for index in range(0, len(pedidos_nuestros)):
-                if pedidos_nuestros[index]["oc"] == oc_id:
-                    del pedidos_nuestros[index]
+            for index in range(0, len(ordenes_por_confirmar)):
+                if ordenes_por_confirmar[index]["oc"] == oc_id:
+                    ordenes_aceptadas.append(ordenes_por_confirmar[index])
+                    del ordenes_por_confirmar[index]
+                    break
 
             return HttpResponse(status=204)
-            
+
         # El pedido fue rechazado
         elif status == "reject":
-            for index in range(0, len(pedidos_nuestros)):
-                if pedidos_nuestros[index]["oc"] == oc_id:
+            for index in range(0, len(ordenes_por_confirmar)):
+                if ordenes_por_confirmar[index]["oc"] == oc_id:
                     i_pedido = index
                     break
-            pedir_siguiente_proveedor(i_pedido, pedidos_nuestros)
-            del pedidos_nuestros[i_pedido]
+            pedir_siguiente_proveedor(i_pedido, ordenes_por_confirmar)
+            del ordenes_por_confirmar[i_pedido]
             return HttpResponse(status=204)

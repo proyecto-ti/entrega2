@@ -26,7 +26,8 @@ sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" 
 
 sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"]
 
-pedidos_nuestros = list()
+ordenes_por_confirmar = list()
+ordenes_aceptadas = list()
 mins_espera_pedido = 5
 
 # AMBIENTE DE DESARROLLO
@@ -592,7 +593,6 @@ def enviar_fabricar():
 
                 else:
                     break
-
         else:
             pass
     else:
@@ -617,69 +617,69 @@ def vaciar_almacen_despacho(todos_productos):
 ###############################
 
 # Esta función crea un pedido a un grupo con su respectiva orden de compra y
-# pone la orden en "pedidos_nuestros" para que se mantenga al tanto
-def pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros):
+# pone la orden en "ordenes_por_confirmar" para que se mantenga al tanto
+def pedir_prod_grupox(sku, cantidad, grupo, ordenes_por_confirmar):
     json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=1, canal = 'b2b')
     oc_id = json_crear_oc["_id"]
     response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku)
     #TENEMOS QUE PREOCUPARNOS DE LA RESPONSE????
-    pedidos_nuestros.append({"sku": sku, "oc": oc_id, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+mins_espera_pedido*60*1000)})
+    ordenes_por_confirmar.append({"sku": sku, "oc": oc_id, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+5*60*1000)})
     return
 
 # Pedir producto ENTREGA 2
 # Cuando queremos pedir un producto ejecutamos esta función. Luego celery se
-# encargará en "pedidos_nuestros_celery_control" en caso de que no nos respondan
+# encargará en "ordenes_por_confirmar_celery_control" en caso de que no nos respondan
 # si hay un rechazo se encarga el metodo de "view.py"
-def iniciar_orden(sku, cantidad, pedidos_nuestros):
+def iniciar_orden(sku, cantidad, ordenes_por_confirmar):
     datos = productos()
     productores = datos[sku]["productores"]
     for grupo in productores:
         c_disponible = cantidad_sku_grupox(grupo, sku)
         if c_disponible > 0 and grupo != 2:
             if cantidad <= c_disponible:
-                pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
+                pedir_prod_grupox(sku, cantidad, grupo, ordenes_por_confirmar)
                 break
             else:
-                pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
+                pedir_prod_grupox(sku, c_disponible, grupo, ordenes_por_confirmar)
                 cantidad -= c_disponible
 #Testing
 #print("Pedidos Nuestros:")
-#iniciar_orden("1007", 10, pedidos_nuestros)
+#iniciar_orden("1007", 10, ordenes_por_confirmar)
 
 # Se ocupa como función auxiliar
 # Este metodo toma un pedido cuyo tiempo de respuesta expiró y busca otros proveedores para esa cantidad de elementos
 # FALTA que vuelva a poner la orden para los grupos 1 en adelante una vez que ya intentó pedirselo a todos
-def pedir_siguiente_proveedor(i_pedido, pedidos_nuestros):
-    productores = datos[pedidos_nuestros[i_pedido]["sku"]]["productores"] # busco los productores del sku
-    i_productor = productores.index(pedidos_nuestros[i_pedido]["grupo"])
-    sku = pedidos_nuestros[i_pedido]["sku"]
-    cantidad = pedidos_nuestros[i_pedido]["cantidad"]
+def pedir_siguiente_proveedor(i_pedido, ordenes_por_confirmar):
+    productores = datos[ordenes_por_confirmar[i_pedido]["sku"]]["productores"] # busco los productores del sku
+    i_productor = productores.index(ordenes_por_confirmar[i_pedido]["grupo"])
+    sku = ordenes_por_confirmar[i_pedido]["sku"]
+    cantidad = ordenes_por_confirmar[i_pedido]["cantidad"]
     while i_productor < len(productores)-1:
         i_productor += 1
         grupo = productores[i_productor]
         c_disponible = cantidad_sku_grupox(grupo, sku)
         if c_disponible > 0 and grupo != 2:
             if cantidad <= c_disponible:
-                pedir_prod_grupox(sku, cantidad, grupo, pedidos_nuestros)
+                pedir_prod_grupox(sku, cantidad, grupo, ordenes_por_confirmar)
                 break # ya habremos pedido todo lo necesario
             else:
-                pedir_prod_grupox(sku, c_disponible, grupo, pedidos_nuestros)
+                pedir_prod_grupox(sku, c_disponible, grupo, ordenes_por_confirmar)
                 cantidad -= c_disponible
     return
 
 # este metodo debe estar corriendo constantemente revisando si es que hay algún
 # grupo que no nos haya respondido.
-def pedidos_nuestros_celery_control(pedidos_nuestros):
+def ordenes_por_confirmar_celery_control(ordenes_por_confirmar):
     datos = productos()
     i_to_delete = list() # en esta lista se agregan los indices a eliminar de la lista
-    for i_pedido in range(0, len(pedidos_nuestros)):
-        if int(time.time()*1000) > pedidos_nuestros[i_pedido]["fecha_pedido"]:
+    for i_pedido in range(0, len(ordenes_por_confirmar)):
+        if int(time.time()*1000) > ordenes_por_confirmar[i_pedido]["fecha_pedido"]:
             i_to_delete.append(i_pedido) # agrego a la lista el indice del elemento a eliminar
-            pedir_siguiente_proveedor(i_pedido, pedidos_nuestros)
+            pedir_siguiente_proveedor(i_pedido, ordenes_por_confirmar)
     #elimino los elementos seleccionados anteriormente
     i_to_delete.reverse()
     for i in i_to_delete:
-        del pedidos_nuestros[i]
+        del ordenes_por_confirmar[i]
 
 ###################################################
 ###################################################

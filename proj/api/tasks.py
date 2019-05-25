@@ -9,9 +9,9 @@ def pedir_stock_minimo_grupos():
     pedir = generar_dict_compras()
     liberar_recepcion()
     # Se revisan los tiempos de los pedidos y se cambia de proveedor en caso de no cumplir
-    pedidos_nuestros_celery_control(pedidos_nuestros)
+    ordenes_por_confirmar_celery_control(ordenes_por_confirmar)
     for sku, cantidad in pedir.items():
-        iniciar_orden(sku, cantidad, pedidos_nuestros)
+        iniciar_orden(sku, cantidad, ordenes_por_confirmar)
         liberar_recepcion()
 
 @task
