@@ -327,7 +327,7 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
 
         requests.post(url, headers=headers_, data=json.dumps(body))
 
-def mover_entre_bodegas(sku, cantidad, almacenId_destino, precio=0, oc = oc):
+def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
     lista_id = obtener_id_producto(sku, cantidad, almacen_id_dict["despacho"])
     for productoId in lista_id:
         message = 'POST' + productoId + almacenId_destino
