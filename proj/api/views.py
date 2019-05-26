@@ -89,7 +89,7 @@ class OrdersView(APIView):
 
         if not sku or not cantidad or not almacenId or not oc:
             return Response(data="No se creó el pedido por un error del cliente en la solicitud", status=400)
-        elif sku not in sku_producidos or cantidad > cantidad_producto(sku):
+        elif sku not in sku_producidos or int(cantidad) > int(cantidad_producto(sku)):
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
             return Response(data="Producto no se encuentra o cantidad no disponible", status=404)

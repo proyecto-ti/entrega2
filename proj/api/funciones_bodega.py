@@ -130,14 +130,14 @@ def aviso_aceptar_pedido(oc, grupo):
     headers = {'Content-Type': 'application/json'}
     body = {"status": "accept"}
     result = requests.post(url, headers=headers, data=json.dumps(body))
-    return result.json()
+    return result
 
 def aviso_rechazar_pedido(oc, grupo):
     url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format(oc)
     headers = {'Content-Type': 'application/json'}
     body = {"status": "reject"}
     result = requests.post(url, headers=headers, data=json.dumps(body))
-    return result.json()
+    return result
 
 #ENTREGA SKU DE PRODUCTOS CON STOCK EN UN ALMACEN Y SU CANTIDAD
 def obtener_sku_con_stock(almacenId):
@@ -663,11 +663,11 @@ def pedir_stock_minimo_grupos():
 #pedir_stock_minimo_grupos()
 ###################################################
 ###################################################
-
+"""
 print(stock())
 print(revisarBodega().json())
 print()
-"""
+
 def pedir_stock_minimo_grupos():
     datos = productos()
     pedir = generar_dict_compras()
