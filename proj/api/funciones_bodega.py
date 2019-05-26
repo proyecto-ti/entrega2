@@ -126,14 +126,14 @@ print(rechazar_oc("5cdf336978171f00042fb831", "hola")) """
 #print(anular_oc("5cdf346478171f00042fb833", "chao"))
 
 def aviso_aceptar_pedido(oc, grupo):
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format_map(oc)
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format(oc)
     headers = {'Content-Type': 'application/json'}
     body = {"status": "accept"}
     result = requests.post(url, headers=headers, data=json.dumps(body))
     return result.json()
 
 def aviso_rechazar_pedido(oc, grupo):
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format_map(oc)
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format(oc)
     headers = {'Content-Type': 'application/json'}
     body = {"status": "reject"}
     result = requests.post(url, headers=headers, data=json.dumps(body))
