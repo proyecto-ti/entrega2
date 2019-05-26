@@ -334,7 +334,7 @@ def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
         url = '{}moveStockBodega'.format(api_url_base)
         headers_ = {'Content-Type': 'application/json',
                     'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
-        body = {"productoId": productoId, "almacenId": almacenId_destino, "oc": oc}
+        body = {"productoId": productoId, "almacenId": almacenId_destino, "oc": oc, "precio": precio}
         respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
         return respuesta
 
