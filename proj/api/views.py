@@ -86,6 +86,7 @@ class OrdersView(APIView):
         cantidad = request.data.get("cantidad")
         almacenId = request.data.get("almacenId")
         oc = request.data.get("oc")
+
         if not sku or not cantidad or not almacenId or not oc:
             return Response(data="No se creó el pedido por un error del cliente en la solicitud", status=400)
         elif sku not in sku_producidos or cantidad > cantidad_producto(sku):
@@ -96,7 +97,7 @@ class OrdersView(APIView):
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE ACEPTA LA ENTREGA
             aviso_aceptar_pedido(oc, grupo)
             despachar_producto(sku, cantidad)
-            mover_entre_bodegas(sku, cantidad, almacenId)
+            mover_entre_bodegas(sku, cantidad, almacenId, oc)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
             return JsonResponse(dictionary, status=201, safe=False)
 

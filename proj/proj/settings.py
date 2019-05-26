@@ -26,7 +26,7 @@ SECRET_KEY = '#d=*wkg9ytfk^m2if*@d52m7#5&a+*x=(u@m&hf)g$y*9upo%&'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-'tuerca2.ing.puc.cl', '127.0.0.1'
+'tuerca2.ing.puc.cl', '127.0.0.1', '*'
 ]
 
 
@@ -141,7 +141,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'pedir_stock_minimo_grupos': {
         'task': 'api.tasks.pedir_stock_minimo_grupos',
-        'schedule': 60*2,
+        'schedule': 60*10,
     },
     'crear_productos': {
         'task': 'api.tasks.crear_productos',

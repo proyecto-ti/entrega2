@@ -5,18 +5,18 @@ import base64
 import json
 import math
 import time
-from datos import *
+from .datos import *
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
 api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 
-almacen_id_dict = {"recepcion": "5cc7b139a823b10004d8e6d3",
-                    "despacho": "5cc7b139a823b10004d8e6d4",
-                    "almacen_1": "5cc7b139a823b10004d8e6d5",
-                    "almacen_2": "5cc7b139a823b10004d8e6d6",
-                    "pulmon": "5cc7b139a823b10004d8e6d7",
-                    "cocina": "5cc7b139a823b10004d8e6d8"}
+almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
+                    "despacho" : "5cbd3ce444f67600049431ba",
+                    "almacen_1" : "5cbd3ce444f67600049431bb",
+                    "almacen_2" : "5cbd3ce444f67600049431bc",
+                    "pulmon" : "5cbd3ce444f67600049431bd",
+                    "cocina" : "5cbd3ce444f67600049431be"}
 
 sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" : 170,
                     "1106": 400,"1114": 50,"1215" : 20,"1115" : 30,"1105" : 50,
@@ -327,14 +327,14 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
 
         requests.post(url, headers=headers_, data=json.dumps(body))
 
-def mover_entre_bodegas(sku, cantidad, almacenId_destino, precio=0, oc=''):
+def mover_entre_bodegas(sku, cantidad, almacenId_destino, precio=0, oc = oc):
     lista_id = obtener_id_producto(sku, cantidad, almacen_id_dict["despacho"])
     for productoId in lista_id:
         message = 'POST' + productoId + almacenId_destino
         url = '{}moveStockBodega'.format(api_url_base)
         headers_ = {'Content-Type': 'application/json',
                     'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
-        body = {"productoId": productoId, "almacenId": almacenId_destino}
+        body = {"productoId": productoId, "almacenId": almacenId_destino, "oc": oc}
         respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
         return respuesta
 
@@ -514,15 +514,9 @@ def get_inventories_grupox(grupo, url_changed=False):
     except:
         return list()
 
-def cantidad_sku_grupox(grupo, sku):
-    inventario = get_inventories_grupox(grupo, url_changed=False)
-    for elem in inventario:
-        if elem['sku'] == sku:
-            return elem["total"]
-    return 0
 
 def post_orders_grupox(grupo, oc_id, cantidad, sku):
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/'
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
     body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion'], 'oc': oc_id}
     result = requests.post(url, headers=headers_, data=json.dumps(body))
@@ -622,19 +616,27 @@ def pedir_prod_grupox(sku, cantidad, grupo, ordenes_por_confirmar):
     json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=1, canal = 'b2b')
     oc_id = json_crear_oc["_id"]
     response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku)
-    #TENEMOS QUE PREOCUPARNOS DE LA RESPONSE????
     ordenes_por_confirmar.append({"sku": sku, "oc": oc_id, "cantidad": cantidad, "grupo": grupo, "fecha_pedido": int(time.time()*1000+5*60*1000)})
-    return
 
 # Pedir producto ENTREGA 2
 # Cuando queremos pedir un producto ejecutamos esta función. Luego celery se
 # encargará en "ordenes_por_confirmar_celery_control" en caso de que no nos respondan
 # si hay un rechazo se encarga el metodo de "view.py"
+
+def cantidad_sku_grupox(grupo, sku):
+    inventario = get_inventories_grupox(grupo, url_changed=False)
+    for elem in inventario:
+        if elem['sku'] == sku:
+            return elem["total"]
+    return 0
+
 def iniciar_orden(sku, cantidad, ordenes_por_confirmar):
     datos = productos()
     productores = datos[sku]["productores"]
     for grupo in productores:
+        print(grupo)
         c_disponible = cantidad_sku_grupox(grupo, sku)
+        print("Grupo ", grupo, c_disponible)
         if c_disponible > 0 and grupo != 2:
             if cantidad <= c_disponible:
                 pedir_prod_grupox(sku, cantidad, grupo, ordenes_por_confirmar)
@@ -643,47 +645,28 @@ def iniciar_orden(sku, cantidad, ordenes_por_confirmar):
                 pedir_prod_grupox(sku, c_disponible, grupo, ordenes_por_confirmar)
                 cantidad -= c_disponible
 #Testing
-#print("Pedidos Nuestros:")
-#iniciar_orden("1007", 10, ordenes_por_confirmar)
+print("Pedidos Nuestros:")
+#iniciar_orden("1005", 10, ordenes_por_confirmar)
+print(ordenes_por_confirmar)
 
-# Se ocupa como función auxiliar
-# Este metodo toma un pedido cuyo tiempo de respuesta expiró y busca otros proveedores para esa cantidad de elementos
-# FALTA que vuelva a poner la orden para los grupos 1 en adelante una vez que ya intentó pedirselo a todos
-def pedir_siguiente_proveedor(i_pedido, ordenes_por_confirmar):
-    productores = datos[ordenes_por_confirmar[i_pedido]["sku"]]["productores"] # busco los productores del sku
-    i_productor = productores.index(ordenes_por_confirmar[i_pedido]["grupo"])
-    sku = ordenes_por_confirmar[i_pedido]["sku"]
-    cantidad = ordenes_por_confirmar[i_pedido]["cantidad"]
-    while i_productor < len(productores)-1:
-        i_productor += 1
-        grupo = productores[i_productor]
-        c_disponible = cantidad_sku_grupox(grupo, sku)
-        if c_disponible > 0 and grupo != 2:
-            if cantidad <= c_disponible:
-                pedir_prod_grupox(sku, cantidad, grupo, ordenes_por_confirmar)
-                break # ya habremos pedido todo lo necesario
-            else:
-                pedir_prod_grupox(sku, c_disponible, grupo, ordenes_por_confirmar)
-                cantidad -= c_disponible
-    return
 
-# este metodo debe estar corriendo constantemente revisando si es que hay algún
-# grupo que no nos haya respondido.
-def ordenes_por_confirmar_celery_control(ordenes_por_confirmar):
-    datos = productos()
-    i_to_delete = list() # en esta lista se agregan los indices a eliminar de la lista
-    for i_pedido in range(0, len(ordenes_por_confirmar)):
-        if int(time.time()*1000) > ordenes_por_confirmar[i_pedido]["fecha_pedido"]:
-            i_to_delete.append(i_pedido) # agrego a la lista el indice del elemento a eliminar
-            pedir_siguiente_proveedor(i_pedido, ordenes_por_confirmar)
-    #elimino los elementos seleccionados anteriormente
-    i_to_delete.reverse()
-    for i in i_to_delete:
-        del ordenes_por_confirmar[i]
+print("tiempO" , int(time.time()) , int(time.time()*100000000000))
+def pedir_stock_minimo_grupos():
+    pedir = generar_dict_compras()
+    liberar_recepcion()
 
+    iniciar_orden("1005", 10, ordenes_por_confirmar)
+
+    ordenes_por_confirmar_celery_control(ordenes_por_confirmar)
+    #for sku, cantidad in pedir.items():
+
+#pedir_stock_minimo_grupos()
 ###################################################
 ###################################################
 
+print(stock())
+print(revisarBodega().json())
+print()
 """
 def pedir_stock_minimo_grupos():
     datos = productos()
