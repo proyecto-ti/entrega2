@@ -81,7 +81,7 @@ class InventoriesView(APIView):
 class OrdersView(APIView):
     def post(self, request):
         #ESTA ES LA FUNCION QUE HAY QUE MODIFICAR PARA LOS POST
-        grupo = requests.headers.get("group")
+        grupo = request.headers.get("group")
         sku = request.data.get("sku")
         cantidad = request.data.get("cantidad")
         almacenId = request.data.get("almacenId")
