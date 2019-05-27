@@ -285,59 +285,6 @@ def liberar_recepcion():
                 mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict["recepcion"], almacen_id_dict["almacen_2"])
     return
 
-# MUEVE LA CANTIDAD QUE SE QUIERA DE UN SKU HACIA EL ALMACEN DE DESPACHO
-def despachar_producto(sku, cantidad):
-    #cantidad que se ha envidado a despacho
-    datos_bodegas = revisarBodega().json()
-    capacidad_despacho = datos_bodegas[1]['totalSpace'] - datos_bodegas[1]['usedSpace']
-    if capacidad_despacho == 0:
-        return
-    elif capacidad_despacho >= cantidad:
-        cantidad_despachar = cantidad
-    else:
-        cantidad_despachar = capacidad_despacho
-    #revisa si producto esta en pulmon
-    lista_pulmon = obtener_sku_con_stock(almacen_id_dict["pulmon"])
-    for producto in lista_pulmon:
-        if producto['_id'] == sku:
-            if producto['total'] >= cantidad_despachar:
-                # se tiene la cantidad que se necesita
-                mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["pulmon"], almacen_id_dict["despacho"])
-                return
-            elif producto['total'] < cantidad_despachar:
-                # no se tiene la cantidad que se necesita, se manda lo que se tiene
-                mover_entre_almacenes(sku, producto['total'], almacen_id_dict["pulmon"], almacen_id_dict["despacho"])
-                cantidad_despachar -= producto['total']
-            break
-    #revisa si producto esta en almacen1
-    lista_almacen1 = obtener_sku_con_stock(almacen_id_dict["almacen_1"])
-    for producto in lista_almacen1:
-        if producto['_id'] == sku:
-            if producto['total'] >= cantidad_despachar:
-                #se tiene la cantidad que se necesita
-                mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["almacen_1"], almacen_id_dict["despacho"])
-                return
-            elif producto['total'] < cantidad_despachar:
-                #no se tiene la cantidad que se necesita, se manda lo que se tiene
-                mover_entre_almacenes(sku, producto['total'], almacen_id_dict["almacen_1"], almacen_id_dict["despacho"])
-                cantidad_despachar -= producto['total']
-            break
-    #revisa si producto esta en almacen2
-    lista_almacen2 = obtener_sku_con_stock(almacen_id_dict["almacen_2"])
-    for producto in lista_almacen2:
-        if producto['_id'] == sku:
-            if producto['total'] >= cantidad_despachar:
-                # se tiene la cantidad que se necesita
-                mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["almacen_2"], almacen_id_dict["despacho"])
-                return
-            elif producto['total'] < cantidad_despachar:
-                # no se tiene la cantidad que se necesita, se manda lo que se tiene
-                mover_entre_almacenes(sku, producto['total'], almacen_id_dict["almacen_2"], almacen_id_dict["despacho"])
-                cantidad_despachar -= producto['total']
-            break
-    return
-
-
 #######FUNCION PARA EL STOCK MINIMO CUANTO TENGO QUE PEDIR DE CADA ELEMENTO
 def devolver_cantidad(stock_actual, sku1):
     for elemento in stock_actual:

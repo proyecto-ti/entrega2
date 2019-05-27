@@ -176,6 +176,14 @@ def request_mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, productoId
     body = {"productoId": productoId, "almacenId": almacenId_destino, "oc": oc, "precio": precio}
     respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
 
+#función despachar de la documentación
+def despachar_producto(sku, cantidad, almacenId_destino, oc, productoId, precio=1):
+    message = 'DELETE' + productoId + almacenId_destino + precio + oc
+    url = '{}stock'.format(api_url_base)
+    headers_ = {'Content-Type': 'application/json',
+                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    body = {"productoId": productoId, "oc": oc, "direccion": almacenId_destino, "precio": precio}
+    respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
 
 
 # BUSCA INVENTARIO DE UN GRUPO
