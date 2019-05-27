@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'bootstrap4',
     'api',
-]
+    ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

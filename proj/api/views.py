@@ -87,16 +87,24 @@ class OrdersView(APIView):
         almacenId = request.data.get("almacenId")
         oc = request.data.get("oc")
         if not sku or not cantidad or not almacenId or not oc:
+            aviso_rechazar_pedido(oc, grupo)
             return Response(data="No se creó el pedido por un error del cliente en la solicitud", status=400)
-        elif sku not in sku_producidos or cantidad > cantidad_producto(sku):
+        elif sku not in sku_producidos:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
-            return Response(data="Producto no se encuentra o cantidad no disponible", status=404)
+            return Response(data="No producimos productos con ese sku", status=404)
+        elif cantidad > cantidad_producto(sku):
+            ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
+            aviso_rechazar_pedido(oc, grupo)
+            dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2",
+                          "aceptado": False, "despachado": False}
+            return JsonResponse(dictionary, status=201, safe=False)
         else:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE ACEPTA LA ENTREGA
             aviso_aceptar_pedido(oc, grupo)
+            liberar_almacen("despacho")
             despachar_producto(sku, cantidad)
-            mover_entre_bodegas(sku, cantidad, almacenId)
+            mover_entre_bodegas(sku, cantidad, almacenId, oc)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
             return JsonResponse(dictionary, status=201, safe=False)
 
@@ -107,11 +115,10 @@ class OCView(APIView):
         #SE LLAMA CUANDO PEDIMOS A OTRO GRUPO
         status = request.data.get("status")
         grupo_id = obtener_oc(oc_id)["proveedor"]
-        #print(status)
-        #print(oc_id)
         if status == "accept":
-            # se va a recibir el pedido
+            # el pedido fue aceptado
             return HttpResponse(status=204)
         elif status == "reject":
-            # el pedido fue rechazado
+        #    # el pedido fue rechazado
             return HttpResponse(status=204)
+
