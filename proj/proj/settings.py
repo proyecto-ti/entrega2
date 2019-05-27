@@ -26,7 +26,7 @@ SECRET_KEY = '#d=*wkg9ytfk^m2if*@d52m7#5&a+*x=(u@m&hf)g$y*9upo%&'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-'tuerca2.ing.puc.cl', '*'
+'tuerca2.ing.puc.cl'
 ]
 
 
