@@ -164,6 +164,6 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
 def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
     lista_id = obtener_id_producto(sku, cantidad, almacen_id_dict["despacho"])
     for productoId in lista_id:
-        request_mover_entre_almacenes(sku, cantidad, almacenId_destino, oc, productoId, precio=1)
-        
+        request_mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, productoId, precio=1)
+
 print(stock())

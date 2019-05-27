@@ -158,7 +158,7 @@ def obtener_productos_almacen(almacenId, sku):
     result = requests.get(url, headers=headers).json()
     return result
 
-def request_mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino, productoId, precio):
+def request_mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino, productoId):
     message = 'POST' + productoId + almacenId_destino
     url = '{}moveStock'.format(api_url_base)
     headers_ = {'Content-Type': 'application/json',
