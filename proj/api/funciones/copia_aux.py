@@ -45,10 +45,6 @@ id_grupos_prod = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 
              10: "5cc66e378820160004a4c3c5", 11: "5cc66e378820160004a4c3c6", 12: "5cc66e378820160004a4c3c7",
              13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"}
 """
-
-
-
-
 ###FUNCION DE HASH NO UTILIZAR###
 def sign_request(string):
 
@@ -156,8 +152,6 @@ def entregar_id_almacen(almacen):
                 return almacenes['_id']
     else:
         return revisar_bodega.status_code
-
-
 
 
 # FABRICA PRODUCTOS PROCESADOS SI SE TIENEN LAS MATERIAS PRIMAS NECESARIAS EN EL DESPACHO
@@ -416,7 +410,7 @@ def get_inventories_grupox(grupo, url_changed=False):
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
     try:
         result = requests.get(url, headers=headers_)
-        return result.json()
+        return result
     except:
         return list()
 
@@ -427,31 +421,6 @@ def post_orders_grupox(grupo, oc_id, cantidad, sku):
     body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion'], 'oc': oc_id}
     result = requests.post(url, headers=headers_, data=json.dumps(body))
     return result
-
-# PIDE MATERIAS PRIMAS QUE NO PRODUZCA NUESTRO GRUPO
-# SE LE ENTREGA UN SKU Y UNA CANTDIAD
-"""SE DEBE PEDIR CON OC"""
-def pedir_productos_sku(sku, cantidad, url_changed=False):
-    datos = productos()
-    productores = datos[sku]["productores"]
-    total_pedido = 0
-    if datos[sku]["propio"] != True:
-        for grupo in productores:
-            try:
-                result = get_inventories_grupox(grupo)
-                if result.status_code == 200 or result.status_code == 201:
-                    if not url_changed:
-                        result_2 = post_orders_grupox(grupo, cantidad, sku)
-                    else:
-                        result_2 = post_orders_grupox(grupo, cantidad, sku, url_changed=True)
-                else:
-                    pass
-            except:
-                pass
-    else:
-        cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
-        #print(fabricarSinPago(sku, cantidad))
-
 
 # FABRICA PRODUCTOS PROCESADOS EN CASO DE NO CUMPLIR STOCK
 # REVISA QUE SE TENGAN MATERIAS PRIMAS PARA FABRICAR
@@ -509,32 +478,45 @@ def vaciar_almacen_despacho(todos_productos):
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
 
-
-#veo la cantidad que tiene un grupo de un sku
-def cantidad_sku_grupox(grupo, sku):
-    inventario = get_inventories_grupox(grupo, url_changed=False)
-    for elem in inventario:
-        if elem['sku'] == sku:
-            return elem["total"]
-    return 0
-
 #le pido a los grupos #
 def pedir_prod_grupox(sku, cantidad, grupo):
     json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=1, canal = 'b2b')
-    oc_id = json_crear_oc["_id"]
+    oc_id = json_crear_oc.json()["_id"]
     response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku)
+    print("VIENDO ORDEN COMPLETA" , response.json())
 
-#Inicio orden para los productos que necesito pedir
-def iniciar_orden(sku, cantidad):
+def pedir_productos_sku(sku, cantidad, url_changed=False):
     datos = productos()
     productores = datos[sku]["productores"]
-    for grupo in productores:
-        c_disponible = cantidad_sku_grupox(grupo, sku)
-        print("Grupo ", grupo, c_disponible)
-        if c_disponible > 0 and grupo != 2:
-            if cantidad <= c_disponible:
-                pedir_prod_grupox(sku, cantidad, grupo)
-                break
-            else:
-                pedir_prod_grupox(sku, c_disponible, grupo)
-                cantidad -= c_disponible
+    if datos[sku]["propio"] != True:
+        for grupo in productores:
+            try:
+                result = get_inventories_grupox(grupo)
+                if result.status_code == 200 or result.status_code == 201:
+                    #print("GRUPO", grupo, result.json())
+                    result_2 = pedir_prod_grupox(sku, cantidad, grupo)
+
+                else:
+                    pass
+            except:
+                pass
+    else:
+        cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
+        #print(fabricarSinPago(sku, cantidad))
+
+
+def pedir_stock_minimo_grupos():
+    pedir = generar_dict_compras()
+    print(pedir)
+    liberar_recepcion()
+    # Se revisan los tiempos de los pedidos y se cambia de proveedor en caso de no cumplir
+    for sku, cantidad in pedir.items():
+        #print("sku", sku, "cantidad", cantidad)
+        pedir_productos_sku(sku, 1)
+        liberar_recepcion()
+
+#pedir_productos_sku("1003", 3)
+#pedir = generar_dict_compras()
+#print(revisarBodega().json())
+#print(pedir)
+#pedir_stock_minimo_grupos()

@@ -3,8 +3,8 @@ from rest_framework.response import Response
 import requests
 from hashlib import sha1
 import hmac
-from .funciones_bodega import *
-from .datos import *
+from .funciones.funciones_internas import *
+from .funciones.datos import *
 import json
 from django.shortcuts import render, render_to_response
 from django.http.response import JsonResponse, HttpResponse
