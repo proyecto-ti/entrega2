@@ -125,6 +125,25 @@ def rechazar_oc(id_oc, motivo_rechazo):
 #print(rechazar_oc("5cdf336978171f00042fb831", "hola"))
 #print(anular_oc("5cdf346478171f00042fb833", "chao"))
 
+# SE ACEPTA PEDIDO DE OTRO GRUPO
+def aviso_aceptar_pedido(oc, grupo):
+    recepcionar_oc(oc)
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
+    headers = {'Content-Type': 'application/json'}
+    body = {"status": "accept"}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result
+
+
+# SE RECHAZA PEDIDO DE OTRO GRUPO
+def aviso_rechazar_pedido(oc, grupo):
+    rechazar_oc(oc, "No hay stock del producto")
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
+    headers = {'Content-Type': 'application/json'}
+    body = {"status": "reject"}
+    result = requests.post(url, headers=headers, data=json.dumps(body))
+    return result
+
 
 #ENTREGA SKU DE PRODUCTOS CON STOCK EN UN ALMACEN Y SU CANTIDAD
 def obtener_sku_con_stock(almacenId):
@@ -314,30 +333,6 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
 
         requests.post(url, headers=headers_, data=json.dumps(body))
 
-######################################
-#### ENTREGA 2 - ENVIAR PEDIDOS ######
-######################################
-
-
-# SE ACEPTA PEDIDO DE OTRO GRUPO
-def aviso_aceptar_pedido(oc, grupo):
-    recepcionar_oc(oc)
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
-    headers = {'Content-Type': 'application/json'}
-    body = {"status": "accept"}
-    result = requests.post(url, headers=headers, data=json.dumps(body))
-    return result
-
-
-# SE RECHAZA PEDIDO DE OTRO GRUPO
-def aviso_rechazar_pedido(oc, grupo):
-    rechazar_oc(oc, "No hay stock del producto")
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
-    headers = {'Content-Type': 'application/json'}
-    body = {"status": "reject"}
-    result = requests.post(url, headers=headers, data=json.dumps(body))
-    return result
-
 
 def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
     lista_id = obtener_id_producto(sku, cantidad, almacen_id_dict["despacho"])
@@ -349,11 +344,6 @@ def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
         body = {"productoId": productoId, "almacenId": almacenId_destino, "oc": oc, "precio": precio}
         respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
         return respuesta
-
-
-######################################
-#### ENTREGA 2 - ENVIAR PEDIDOS ######
-######################################
 
 
 # ENTREGA LA CANTIDAD DE UNIDADES QUE SE TIENEN DE UN SKU
