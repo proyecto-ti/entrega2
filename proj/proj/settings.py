@@ -141,11 +141,11 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'pedir_stock_minimo_grupos': {
         'task': 'api.tasks.pedir_stock_minimo_grupos',
-        'schedule': 60*5,
+        'schedule': 60*120,
     },
     'crear_productos': {
         'task': 'api.tasks.crear_productos',
-        'schedule': 60*5,
+        'schedule': 60*120,
     }
 }
 

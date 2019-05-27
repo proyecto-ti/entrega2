@@ -112,12 +112,7 @@ def rechazar_oc(id_oc, motivo_rechazo):
     body = {"id": id_oc, "rechazo": motivo_rechazo}
     result = requests.post(url, headers=headers, data=json.dumps(body))
     return result
-"""
-print(crear_oc(3, 1006, 3, 1000, "b2b"))
-print(obtener_oc("5cdf2ec978171f00042fb823"))
-print(recepcionar_oc("5cdf2ec978171f00042fb823"))
-print(rechazar_oc("5cdf336978171f00042fb831", "hola")) """
-#print(anular_oc("5cdf346478171f00042fb833", "chao"))
+
 
 def aviso_aceptar_pedido(oc, grupo):
     url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format(oc)
@@ -141,9 +136,6 @@ def obtener_sku_con_stock(almacenId):
     url = '{}skusWithStock?almacenId={}'.format(api_url_base, almacenId)
     result = requests.get(url, headers=headers).json()
     return result
-
-#for almacen in almacen_id_dict:
-#    print(obtener_sku_con_stock(almacen_id_dict[almacen]))
 
 # ENTREGA EL TIPO DE ALMACEN, CAPACIDAD Y ESPACIO USADO
 def revisarBodega():
@@ -233,7 +225,6 @@ def obtener_id_producto(sku, cantidad, almacenId):
     for producto in lista_productos:
         if producto['_id'] == sku:
             lista_productos_almacen = obtener_productos_almacen(almacenId, sku)
-            #print(lista_productos_almacen)
             for producto_unitario in lista_productos_almacen:
                 lista_id_productos.append(producto_unitario['_id'])
                 cantidad_id += 1
@@ -363,14 +354,11 @@ def devolver_cantidad(stock_actual, sku1):
 
 def calcular_stock_unidades(stock_actual, diccionario):
     dict_compras_cantidad = dict()
-    #print("\t2.1.1")
     for sku in diccionario:
-        #print("\t2.1.2")
         element = diccionario[sku]
         if element['stock_minimo'] is not None:
             cantidad_actual = devolver_cantidad(stock_actual, sku)#funcion_que retorna int(element.sku)
             if cantidad_actual < element['stock_minimo']:
-                #print("what")
                 cantidad_pedir = element['lote'] * math.ceil((element['stock_minimo']-cantidad_actual)/element['lote'])
                 dict_compras_cantidad[sku] = cantidad_pedir
     return dict_compras_cantidad
@@ -390,7 +378,6 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
                 dict_comprar[sku] = 0
             else:
                 dict_aux = {}
-                #print(dict_producto[str(sku)]['nombre'], sku, dict_producto[str(sku)]['receta'])
                 for element in dict_producto[str(sku)]['receta']:
                     cantidad_element = dict_producto[str(sku)]['receta'][element] * cantidad / dict_producto[str(sku)]['lote']
                     dict_aux[element] = cantidad_element
@@ -398,8 +385,6 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
 
                     dict_compra_final.update(calcular_cantidad_comprar(dict_producto, dict_aux, dict_compra_final))
 
-    #time.sleep(2)
-    #print("RETORNANDO", dict_compra_final)
     return dict_compra_final
 
 
@@ -407,9 +392,7 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
 def generar_dict_compras():
     datos_productos = productos()
     stock_actual = stock()
-    #print("\t2.1")
     calcular_stock_unidades_ = calcular_stock_unidades(stock_actual, datos_productos)
-    #print("\t2.2")
     dict_compra_final = calcular_cantidad_comprar(datos_productos, calcular_stock_unidades_)
 
     for materias_primas in stock_actual:
@@ -461,7 +444,6 @@ def pedir_productos_sku(sku, cantidad, url_changed=False):
                         result_2 = post_orders_grupox(grupo, cantidad, sku)
                     else:
                         result_2 = post_orders_grupox(grupo, cantidad, sku, url_changed=True)
-                        #print("Le estamos pidiendo", str(cantidad), "al grupo", str(grupo), "STA_COD: " , result_2.status_code)
                 else:
                     pass
             except:
@@ -478,7 +460,6 @@ def enviar_fabricar():
     stock2 = stock()
     for element in sku_stock_dict: # recorro elementos con stock minimo
         quantity = devolver_cantidad(stock2, element) # calculo cantidad del elemento en inventario
-        #print(element,quantity)
         if sku_stock_dict[element] > quantity: # si tengo menos productos que el stock minimo
 
             resta = sku_stock_dict[element] - quantity #calculo cuanto es lo que me falta
@@ -527,7 +508,6 @@ def vaciar_almacen_despacho(todos_productos):
                         'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
-            print(result)
 
 
 #veo la cantidad que tiene un grupo de un sku
@@ -549,7 +529,6 @@ def iniciar_orden(sku, cantidad):
     datos = productos()
     productores = datos[sku]["productores"]
     for grupo in productores:
-        print(grupo)
         c_disponible = cantidad_sku_grupox(grupo, sku)
         print("Grupo ", grupo, c_disponible)
         if c_disponible > 0 and grupo != 2:
