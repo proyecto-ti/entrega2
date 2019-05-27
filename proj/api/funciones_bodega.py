@@ -75,7 +75,8 @@ def anular_oc(id_oc, motivo_anulacion):
     body = {"id": id_oc, "anulacion": motivo_anulacion}
 
     result = requests.delete(url, headers=headers, data=json.dumps(body))
-    return result.json()
+    print("hola", result)
+    return result
 
 
 def crear_oc(grupo_proveedor, sku, cantidad, preciounitario, canal):
@@ -88,7 +89,7 @@ def crear_oc(grupo_proveedor, sku, cantidad, preciounitario, canal):
                 "http://tuerca2.ing.puc.cl/orders/<str:oc_id>/notification/"}
 
     result = requests.put(url, headers=headers, data=json.dumps(body))
-    return result.json()
+    return result
 
 
 def obtener_oc(id_oc):
@@ -97,7 +98,7 @@ def obtener_oc(id_oc):
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     url = '{}obtener/{}'.format(api_oc_url_base, id_oc)
     result = requests.get(url, headers=headers)
-    return result.json()
+    return result
 
 
 def recepcionar_oc(id_oc):
@@ -107,7 +108,7 @@ def recepcionar_oc(id_oc):
     url = '{}recepcionar/{}'.format(api_oc_url_base, id_oc)
     body = {"id": id_oc}
     result = requests.post(url, headers=headers, data=json.dumps(body))
-    return result.json()
+    return result
 
 
 def rechazar_oc(id_oc, motivo_rechazo):
@@ -117,15 +118,8 @@ def rechazar_oc(id_oc, motivo_rechazo):
     url = '{}rechazar/{}'.format(api_oc_url_base, id_oc)
     body = {"id": id_oc, "rechazo": motivo_rechazo}
     result = requests.post(url, headers=headers, data=json.dumps(body))
-    return result.json()
+    return result
 
-#print(crear_oc(3, 1006, 3, 1000, "b2b"))
-#print(obtener_oc("5cdf2ec978171f00042fb823"))
-#print(recepcionar_oc("5cdf2ec978171f00042fb823"))
-#print(rechazar_oc("5cdf336978171f00042fb831", "hola"))
-#print(anular_oc("5cdf346478171f00042fb833", "chao"))
-
-# SE ACEPTA PEDIDO DE OTRO GRUPO
 def aviso_aceptar_pedido(oc, grupo):
     recepcionar_oc(oc)
     url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
@@ -214,21 +208,21 @@ def update_dictionary_stocks(dictionary, stock_type):
 
 def stock_fixed():
     stock_recepcion = obtener_sku_con_stock(almacen_id_dict['recepcion'])
-    print("Stock recepcion")
-    print(type(stock_recepcion))
-    print(stock_recepcion)
+    # print("Stock recepcion")
+    # print(type(stock_recepcion))
+    # print(stock_recepcion)
     stock_almacen_1 = obtener_sku_con_stock(almacen_id_dict['almacen_1'])
-    print("Stock almacen 1")
-    print(type(stock_almacen_1))
-    print(stock_almacen_1)
+    # print("Stock almacen 1")
+    # print(type(stock_almacen_1))
+    # print(stock_almacen_1)
     stock_almacen_2 = obtener_sku_con_stock(almacen_id_dict['almacen_2'])
-    print("Stock almacen 2")
-    print(type(stock_almacen_2))
-    print(stock_almacen_2)
+    # print("Stock almacen 2")
+    # print(type(stock_almacen_2))
+    # print(stock_almacen_2)
     stock_pulmon = obtener_sku_con_stock(almacen_id_dict['pulmon'])
-    print("Stock pulmon")
-    print(type(stock_pulmon))
-    print(stock_pulmon)
+    # print("Stock pulmon")
+    # print(type(stock_pulmon))
+    # print(stock_pulmon)
     #print("Recepcion", stock_recepcion)
     #print("Almacen 1", stock_almacen_1)
     #print("Almacen 2", stock_almacen_2)
@@ -619,7 +613,7 @@ def vaciar_almacen_despacho(todos_productos):
                         'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
-            print(result)
+            #print(result)
 #print(cantidad_producto("1006"))
 
 #print(stock())
