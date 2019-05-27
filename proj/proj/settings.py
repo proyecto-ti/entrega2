@@ -26,7 +26,7 @@ SECRET_KEY = '#d=*wkg9ytfk^m2if*@d52m7#5&a+*x=(u@m&hf)g$y*9upo%&'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-'tuerca2.ing.puc.cl', '127.0.0.1'
+'tuerca2.ing.puc.cl', '*'
 ]
 
 
@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'bootstrap4',
     'api',
-    ]
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -133,8 +133,8 @@ STATIC_URL = '/static/'
 
 STATIC_URL = '/static/'
 
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
@@ -146,6 +146,10 @@ CELERY_BEAT_SCHEDULE = {
     'crear_productos': {
         'task': 'api.tasks.crear_productos',
         'schedule': 60*8,
+    },
+    'pedir_profesor': {
+        'task': 'api.tasks.pedir_profesor',
+        'schedule': 60*15,
     }
 }
 

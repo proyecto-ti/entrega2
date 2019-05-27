@@ -3,8 +3,8 @@ from rest_framework.response import Response
 import requests
 from hashlib import sha1
 import hmac
-from .funciones_bodega import *
-from .datos import *
+from .funciones.funciones_internas import *
+from .funciones.datos import *
 import json
 from django.shortcuts import render, render_to_response
 from django.http.response import JsonResponse, HttpResponse
@@ -15,12 +15,12 @@ name_sku_dict = {"Sesamo": "1011",
                 "Azucar": "1003",
                 "Arroz_Grano_Corto": "1001"}
 
-almacen_dict_id = { "5cc7b139a823b10004d8e6d3" : "recepcion",
-                     "5cc7b139a823b10004d8e6d4" : "despacho",
-                     "5cc7b139a823b10004d8e6d5" : "almacen_1",
-                     "5cc7b139a823b10004d8e6d6" : "almacen_2",
-                     "5cc7b139a823b10004d8e6d7" : "pulmon",
-                     "5cc7b139a823b10004d8e6d8" : "cocina"}
+almacen_dict_id = { "5cbd3ce444f67600049431b9" : "recepcion",
+                     "5cbd3ce444f67600049431ba" : "despacho",
+                     "5cbd3ce444f67600049431bb" : "almacen_1",
+                     "5cbd3ce444f67600049431bc" : "almacen_2",
+                     "5cbd3ce444f67600049431bd" : "pulmon",
+                     "5cbd3ce444f67600049431be" : "cocina"}
 
 sku_stock_dict = {  "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" : 170,
                     "1106" : 400,"1114" : 50,"1215" : 20,"1115" : 30,"1105" : 50,
@@ -72,7 +72,7 @@ class InventoriesView(APIView):
     def get(self, request):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
-        lista = stock_fixed()
+        lista = stock(view = True)
         return JsonResponse(lista, status=200, safe=False)
 
 
@@ -81,33 +81,35 @@ class InventoriesView(APIView):
 class OrdersView(APIView):
     def post(self, request):
         #ESTA ES LA FUNCION QUE HAY QUE MODIFICAR PARA LOS POST
-        grupo = requests.headers.get("group")
+        grupo = request.headers.get("group")
         sku = request.data.get("sku")
         cantidad = request.data.get("cantidad")
         almacenId = request.data.get("almacenId")
         oc = request.data.get("oc")
+
         if not sku or not cantidad or not almacenId or not oc:
-            aviso_rechazar_pedido(oc, grupo)
             return Response(data="No se creó el pedido por un error del cliente en la solicitud", status=400)
+
         elif sku not in sku_producidos:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
             return Response(data="No producimos productos con ese sku", status=404)
+
         elif cantidad > cantidad_producto(sku):
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2",
                           "aceptado": False, "despachado": False}
             return JsonResponse(dictionary, status=201, safe=False)
+
         else:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE ACEPTA LA ENTREGA
             aviso_aceptar_pedido(oc, grupo)
             liberar_almacen("despacho")
-            despachar_producto(sku, cantidad)
+            buscar_mover_producto("despacho", sku, cantidad)
             mover_entre_bodegas(sku, cantidad, almacenId, oc)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
             return JsonResponse(dictionary, status=201, safe=False)
-
 
 class OCView(APIView):
     def post(self, request, oc_id):
@@ -115,10 +117,23 @@ class OCView(APIView):
         #SE LLAMA CUANDO PEDIMOS A OTRO GRUPO
         status = request.data.get("status")
         grupo_id = obtener_oc(oc_id)["proveedor"]
+        # Se va a recibir el pedido
         if status == "accept":
-            # el pedido fue aceptado
-            return HttpResponse(status=204)
-        elif status == "reject":
-        #    # el pedido fue rechazado
+            # Quitamos el track a la orden de compra en "pedidos nuestros"
+            for index in range(0, len(ordenes_por_confirmar)):
+                if ordenes_por_confirmar[index]["oc"] == oc_id:
+                    ordenes_aceptadas.append(ordenes_por_confirmar[index])
+                    del ordenes_por_confirmar[index]
+                    break
+
             return HttpResponse(status=204)
 
+        # El pedido fue rechazado
+        elif status == "reject":
+            for index in range(0, len(ordenes_por_confirmar)):
+                if ordenes_por_confirmar[index]["oc"] == oc_id:
+                    i_pedido = index
+                    break
+            pedir_siguiente_proveedor(i_pedido, ordenes_por_confirmar)
+            del ordenes_por_confirmar[i_pedido]
+            return HttpResponse(status=204)

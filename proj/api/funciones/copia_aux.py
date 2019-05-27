@@ -1,5 +1,3 @@
-#from rest_framework.views import APIView
-#from rest_framework.response import Response
 import requests
 from hashlib import sha1
 import hmac
@@ -8,19 +6,17 @@ import json
 import math
 import time
 from .datos import *
-from django.shortcuts import render, render_to_response
-from django.http.response import JsonResponse, HttpResponse
 
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
 api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 
-almacen_id_dict = {"recepcion": "5cc7b139a823b10004d8e6d3",
-                    "despacho": "5cc7b139a823b10004d8e6d4",
-                    "almacen_1": "5cc7b139a823b10004d8e6d5",
-                    "almacen_2": "5cc7b139a823b10004d8e6d6",
-                    "pulmon": "5cc7b139a823b10004d8e6d7",
-                    "cocina": "5cc7b139a823b10004d8e6d8"}
+almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
+                    "despacho" : "5cbd3ce444f67600049431ba",
+                    "almacen_1" : "5cbd3ce444f67600049431bb",
+                    "almacen_2" : "5cbd3ce444f67600049431bc",
+                    "pulmon" : "5cbd3ce444f67600049431bd",
+                    "cocina" : "5cbd3ce444f67600049431be"}
 
 sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" : 170,
                     "1106": 400,"1114": 50,"1215" : 20,"1115" : 30,"1105" : 50,
@@ -29,6 +25,10 @@ sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" 
                     "1107": 50,"1307": 170,"1211" : 60}
 
 sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"]
+
+ordenes_por_confirmar = list()
+ordenes_aceptadas = list()
+mins_espera_pedido = 5
 
 # AMBIENTE DE DESARROLLO
 id_grupos = {1: "5cbd31b7c445af0004739be3", 2: "5cbd31b7c445af0004739be4", 3: "5cbd31b7c445af0004739be5",
@@ -43,28 +43,18 @@ id_grupos_prod = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 
              4: "5cc66e378820160004a4c3bf", 5: "5cc66e378820160004a4c3c0", 6: "5cc66e378820160004a4c3c1",
              7: "5cc66e378820160004a4c3c2", 8: "5cc66e378820160004a4c3c3", 9: "5cc66e378820160004a4c3c4",
              10: "5cc66e378820160004a4c3c5", 11: "5cc66e378820160004a4c3c6", 12: "5cc66e378820160004a4c3c7",
-             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"} 
+             13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"}
 """
-
-
-
-
 ###FUNCION DE HASH NO UTILIZAR###
 def sign_request(string):
 
-    # key = b"CONSUMER_SECRET&" #If you dont have a token yet
     key = str.encode(api_key)
-    # The Base String as specified here:
     raw = str.encode(string) # as specified by OAuth
-
     hashed = hmac.new(key, raw, digestmod=sha1)
-
     hashed_bytes = hashed.digest()
-    # The signature
     encoded = base64.b64encode(hashed_bytes)
     encoded = str(encoded, 'UTF-8')
     return encoded
-
 
 # METODOS DE OC
 def anular_oc(id_oc, motivo_anulacion):
@@ -75,7 +65,6 @@ def anular_oc(id_oc, motivo_anulacion):
     body = {"id": id_oc, "anulacion": motivo_anulacion}
 
     result = requests.delete(url, headers=headers, data=json.dumps(body))
-    print("hola", result)
     return result
 
 
@@ -84,9 +73,9 @@ def crear_oc(grupo_proveedor, sku, cantidad, preciounitario, canal):
     headers = {'Content-Type': 'application/json',
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     url = '{}crear'.format(api_oc_url_base)
-    body = {"cliente": id_grupos[2], "proveedor": id_grupos[grupo_proveedor], "sku": sku, "fechaEntrega": int(time.time()*1000+10*60*1000),
+    body = {"cliente": id_grupos[2], "proveedor": id_grupos[grupo_proveedor], "sku": sku, "fechaEntrega": int(time.time()*1000+mins_espera_pedido*60*1000),
             "cantidad": int(cantidad), "precioUnitario": preciounitario, "canal": canal, "urlNotificacion":
-                "http://tuerca2.ing.puc.cl/orders/<str:oc_id>/notification/"}
+                "http://tuerca2.ing.puc.cl/oc/{_id}/notification/"}
 
     result = requests.put(url, headers=headers, data=json.dumps(body))
     return result
@@ -120,24 +109,20 @@ def rechazar_oc(id_oc, motivo_rechazo):
     result = requests.post(url, headers=headers, data=json.dumps(body))
     return result
 
+
 def aviso_aceptar_pedido(oc, grupo):
-    recepcionar_oc(oc)
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format(oc)
     headers = {'Content-Type': 'application/json'}
     body = {"status": "accept"}
     result = requests.post(url, headers=headers, data=json.dumps(body))
     return result
 
-
-# SE RECHAZA PEDIDO DE OTRO GRUPO
 def aviso_rechazar_pedido(oc, grupo):
-    rechazar_oc(oc, "No hay stock del producto")
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/{}/notification'.format_map(oc)
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/oc/{}/notification'.format(oc)
     headers = {'Content-Type': 'application/json'}
     body = {"status": "reject"}
     result = requests.post(url, headers=headers, data=json.dumps(body))
     return result
-
 
 #ENTREGA SKU DE PRODUCTOS CON STOCK EN UN ALMACEN Y SU CANTIDAD
 def obtener_sku_con_stock(almacenId):
@@ -147,9 +132,6 @@ def obtener_sku_con_stock(almacenId):
     url = '{}skusWithStock?almacenId={}'.format(api_url_base, almacenId)
     result = requests.get(url, headers=headers).json()
     return result
-
-#for almacen in almacen_id_dict:
-#    print(obtener_sku_con_stock(almacen_id_dict[almacen]))
 
 # ENTREGA EL TIPO DE ALMACEN, CAPACIDAD Y ESPACIO USADO
 def revisarBodega():
@@ -161,10 +143,7 @@ def revisarBodega():
     result = requests.get(url, headers=headers)
     return result
 
-#for almacen in revisarBodega().json():
-#    print(obtener_sku_con_stock(almacen['_id']))
-
-
+#me entrega el id de un almacen
 def entregar_id_almacen(almacen):
     revisar_bodega = revisarBodega()
     if revisar_bodega.status_code == 200:
@@ -174,9 +153,6 @@ def entregar_id_almacen(almacen):
     else:
         return revisar_bodega.status_code
 
-
-#print(revisarBodega())
-#print(entregar_id_almacen("recepcion"))
 
 # FABRICA PRODUCTOS PROCESADOS SI SE TIENEN LAS MATERIAS PRIMAS NECESARIAS EN EL DESPACHO
 
@@ -190,14 +166,8 @@ def fabricarSinPago(sku, cantidad):
     result = requests.put(url, headers=headers, data=json.dumps(body))
     return result.json()
 
-    #if result.status_code == 200:
-    #    return result.json()
-    #else:
-    #    return result.json()
 
-#print(fabricarSinPago("1006", 10))
-
-######TODO ESTO ES PARA INVENTORIES GET
+######TODO ESTO ES PARA EL STOCK#########
 def update_dictionary_stocks(dictionary, stock_type):
     for sku in stock_type:
         if not sku["_id"] in dictionary:
@@ -206,70 +176,12 @@ def update_dictionary_stocks(dictionary, stock_type):
             dictionary[sku["_id"]] += sku["total"]
     return dictionary
 
-def stock_fixed():
-    stock_recepcion = obtener_sku_con_stock(almacen_id_dict['recepcion'])
-    # print("Stock recepcion")
-    # print(type(stock_recepcion))
-    # print(stock_recepcion)
-    stock_almacen_1 = obtener_sku_con_stock(almacen_id_dict['almacen_1'])
-    # print("Stock almacen 1")
-    # print(type(stock_almacen_1))
-    # print(stock_almacen_1)
-    stock_almacen_2 = obtener_sku_con_stock(almacen_id_dict['almacen_2'])
-    # print("Stock almacen 2")
-    # print(type(stock_almacen_2))
-    # print(stock_almacen_2)
-    stock_pulmon = obtener_sku_con_stock(almacen_id_dict['pulmon'])
-    # print("Stock pulmon")
-    # print(type(stock_pulmon))
-    # print(stock_pulmon)
-    #print("Recepcion", stock_recepcion)
-    #print("Almacen 1", stock_almacen_1)
-    #print("Almacen 2", stock_almacen_2)
-    #print("Pulmon", stock_pulmon)
-
-    #[{'_id': '1012', 'total': 1}, {'_id': '1310', 'total': 48},
-    dict_response = dict()
-    for item in stock_recepcion:
-        if item["_id"] in dict_response.keys():
-            dict_response[item["_id"]] += item["total"]
-        else:
-            dict_response[item["_id"]] = item["total"]
-    for item in stock_almacen_1:
-        if item["_id"] in dict_response.keys():
-            dict_response[item["_id"]] += item["total"]
-        else:
-            dict_response[item["_id"]] = item["total"]
-    for item in stock_almacen_2:
-        if item["_id"] in dict_response.keys():
-            dict_response[item["_id"]] += item["total"]
-        else:
-            dict_response[item["_id"]] = item["total"]
-    for item in stock_pulmon:
-        if item["_id"] in dict_response.keys():
-            dict_response[item["_id"]] += item["total"]
-        else:
-            dict_response[item["_id"]] = item["total"]
-
-    datos = productos()
-    list_skus = dict_response.keys()
-    list_response = list()
-    for sku in list_skus:
-        if sku in sku_producidos:
-            list_response.append({"sku": sku, "nombre": datos[sku]["nombre"], "total": dict_response[sku]})
-    #print(list_response)
-    return list_response
-
-
 def stock(view = False):
     stock_recepcion = obtener_sku_con_stock(almacen_id_dict['recepcion'])
     stock_almacen_1 = obtener_sku_con_stock(almacen_id_dict['almacen_1'])
     stock_almacen_2 = obtener_sku_con_stock(almacen_id_dict['almacen_2'])
     stock_pulmon = obtener_sku_con_stock(almacen_id_dict['pulmon'])
-    #print("Recepcion", stock_recepcion)
-    #print("Almacen 1", stock_almacen_1)
-    #print("Almacen 2", stock_almacen_2)
-    #print("Pulmon", stock_pulmon)
+
     dict = update_dictionary_stocks({}, stock_recepcion)
     dict = update_dictionary_stocks(dict, stock_almacen_1)
     dict = update_dictionary_stocks(dict, stock_almacen_2)
@@ -307,7 +219,6 @@ def obtener_id_producto(sku, cantidad, almacenId):
     for producto in lista_productos:
         if producto['_id'] == sku:
             lista_productos_almacen = obtener_productos_almacen(almacenId, sku)
-            #print(lista_productos_almacen)
             for producto_unitario in lista_productos_almacen:
                 lista_id_productos.append(producto_unitario['_id'])
                 cantidad_id += 1
@@ -327,7 +238,6 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
 
         requests.post(url, headers=headers_, data=json.dumps(body))
 
-
 def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
     lista_id = obtener_id_producto(sku, cantidad, almacen_id_dict["despacho"])
     for productoId in lista_id:
@@ -337,7 +247,6 @@ def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
                     'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
         body = {"productoId": productoId, "almacenId": almacenId_destino, "oc": oc, "precio": precio}
         respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
-        return respuesta
 
 
 # ENTREGA LA CANTIDAD DE UNIDADES QUE SE TIENEN DE UN SKU
@@ -352,32 +261,29 @@ def cantidad_producto(sku):
     return cantidad
 #pedir_productos_sku('1001', 1)
 
-
-# MUEVE LOS PRODUCTOS DE ALMACEN AL ALMACEN 1 O ALMACEN 2
-def liberar_almacen(almacen):
+# MUEVE LOS PRODUCTOS DE LA RECEPCION AL ALMACEN 1 O ALMACEN 2
+def liberar_recepcion():
     #funcion que deja recepcion vacia, se mandan productos a almcanen1 o almacen2
     datos_bodegas = revisarBodega().json()
     #espacio en recepcion
     espacio_usado = datos_bodegas[0]['usedSpace']
     if espacio_usado == 0:
-        #almacen ya esta vacion
+        #recepcion ya esta vacia
         return
     else:
-        lista_almacen = obtener_sku_con_stock(almacen_id_dict[almacen])
-        for producto in lista_almacen:
+        lista_recepcion = obtener_sku_con_stock(almacen_id_dict["recepcion"])
+        for producto in lista_recepcion:
             #se actualizan datos de bodega
             datos_bodegas = revisarBodega().json()
             #revisa si cabe en almacen1
             if producto['total'] <= datos_bodegas[2]['totalSpace'] - datos_bodegas[2]['usedSpace']:
                 #traspasa todos esos productos a almacen1
-                mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict[almacen], almacen_id_dict["almacen_1"])
+                mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict["recepcion"], almacen_id_dict["almacen_1"])
             #revisa si cabe en almacen2
             elif producto['total'] <= datos_bodegas[3]['totalSpace'] - datos_bodegas[3]['usedSpace']:
                 #traspasa todos esos productos a almacen2
-                mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict[almacen], almacen_id_dict["almacen_2"])
+                mover_entre_almacenes(producto['_id'], producto['total'], almacen_id_dict["recepcion"], almacen_id_dict["almacen_2"])
     return
-
-
 
 # MUEVE LA CANTIDAD QUE SE QUIERA DE UN SKU HACIA EL ALMACEN DE DESPACHO
 def despachar_producto(sku, cantidad):
@@ -442,14 +348,11 @@ def devolver_cantidad(stock_actual, sku1):
 
 def calcular_stock_unidades(stock_actual, diccionario):
     dict_compras_cantidad = dict()
-    #print("\t2.1.1")
     for sku in diccionario:
-        #print("\t2.1.2")
         element = diccionario[sku]
         if element['stock_minimo'] is not None:
             cantidad_actual = devolver_cantidad(stock_actual, sku)#funcion_que retorna int(element.sku)
             if cantidad_actual < element['stock_minimo']:
-                #print("what")
                 cantidad_pedir = element['lote'] * math.ceil((element['stock_minimo']-cantidad_actual)/element['lote'])
                 dict_compras_cantidad[sku] = cantidad_pedir
     return dict_compras_cantidad
@@ -469,7 +372,6 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
                 dict_comprar[sku] = 0
             else:
                 dict_aux = {}
-                #print(dict_producto[str(sku)]['nombre'], sku, dict_producto[str(sku)]['receta'])
                 for element in dict_producto[str(sku)]['receta']:
                     cantidad_element = dict_producto[str(sku)]['receta'][element] * cantidad / dict_producto[str(sku)]['lote']
                     dict_aux[element] = cantidad_element
@@ -477,8 +379,6 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
 
                     dict_compra_final.update(calcular_cantidad_comprar(dict_producto, dict_aux, dict_compra_final))
 
-    #time.sleep(2)
-    #print("RETORNANDO", dict_compra_final)
     return dict_compra_final
 
 
@@ -486,9 +386,7 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
 def generar_dict_compras():
     datos_productos = productos()
     stock_actual = stock()
-    #print("\t2.1")
     calcular_stock_unidades_ = calcular_stock_unidades(stock_actual, datos_productos)
-    #print("\t2.2")
     dict_compra_final = calcular_cantidad_comprar(datos_productos, calcular_stock_unidades_)
 
     for materias_primas in stock_actual:
@@ -502,34 +400,6 @@ def generar_dict_compras():
     return dict_compra_final
 
 ########
-
-
-# PIDE MATERIAS PRIMAS QUE NO PRODUZCA NUESTRO GRUPO
-# SE LE ENTREGA UN SKU Y UNA CANTDIAD
-"""SE DEBE PEDIR CON OC"""
-def pedir_productos_sku(sku, cantidad, url_changed=False):
-    datos = productos()
-    productores = datos[sku]["productores"]
-    total_pedido = 0
-    if datos[sku]["propio"] != True:
-        for grupo in productores:
-            try:
-                result = get_inventories_grupox(grupo)
-                if result.status_code == 200 or result.status_code == 201:
-                    if not url_changed:
-                        result_2 = post_orders_grupox(grupo, cantidad, sku)
-                    else:
-                        result_2 = post_orders_grupox(grupo, cantidad, sku, url_changed=True)
-                        #print("Le estamos pidiendo", str(cantidad), "al grupo", str(grupo), "STA_COD: " , result_2.status_code)
-                else:
-                    pass
-            except:
-                pass
-    else:
-        cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
-        #print(fabricarSinPago(sku, cantidad))
-
-
 # BUSCA INVENTARIO DE UN GRUPO
 def get_inventories_grupox(grupo, url_changed=False):
     if not url_changed:
@@ -538,23 +408,19 @@ def get_inventories_grupox(grupo, url_changed=False):
         url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories/'
 
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
-    result = requests.get(url, headers=headers_)
-    return result
+    try:
+        result = requests.get(url, headers=headers_)
+        return result
+    except:
+        return list()
 
 
-# ENVIA PRODUCTOS QUE PIDE UN GRUPO
-"""SE DEBE ENTREGAR CON OC"""
-def post_orders_grupox(grupo, cantidad, sku, url_changed=False):
-    if not url_changed:
-        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
-    else:
-        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/'
-
+def post_orders_grupox(grupo, oc_id, cantidad, sku):
+    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
-    body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion']}
+    body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion'], 'oc': oc_id}
     result = requests.post(url, headers=headers_, data=json.dumps(body))
     return result
-
 
 # FABRICA PRODUCTOS PROCESADOS EN CASO DE NO CUMPLIR STOCK
 # REVISA QUE SE TENGAN MATERIAS PRIMAS PARA FABRICAR
@@ -563,7 +429,6 @@ def enviar_fabricar():
     stock2 = stock()
     for element in sku_stock_dict: # recorro elementos con stock minimo
         quantity = devolver_cantidad(stock2, element) # calculo cantidad del elemento en inventario
-        #print(element,quantity)
         if sku_stock_dict[element] > quantity: # si tengo menos productos que el stock minimo
 
             resta = sku_stock_dict[element] - quantity #calculo cuanto es lo que me falta
@@ -595,7 +460,6 @@ def enviar_fabricar():
 
                 else:
                     break
-
         else:
             pass
     else:
@@ -613,49 +477,46 @@ def vaciar_almacen_despacho(todos_productos):
                         'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
-            #print(result)
-#print(cantidad_producto("1006"))
 
-#print(stock())
-#enviar_fabricar()
-#print(stock())
-#mover_entre_almacenes("1006",86,almacen_id_dict["despacho"],almacen_id_dict["almacen_1"])
-#print(ObtenerSkuconStock(almacen_id_dict["despacho"]))
-#enviar_fabricar()
-#print(cantidad_producto("1106"))
-#print(cantidad_producto("1006"))
+#le pido a los grupos #
+def pedir_prod_grupox(sku, cantidad, grupo):
+    json_crear_oc = crear_oc(grupo_proveedor=grupo, sku=sku, cantidad=cantidad, preciounitario=1, canal = 'b2b')
+    oc_id = json_crear_oc.json()["_id"]
+    response = post_orders_grupox(grupo = grupo, oc_id=oc_id, cantidad=cantidad, sku=sku)
+    print("VIENDO ORDEN COMPLETA" , response.json())
 
-"""
-def pedir_stock_minimo_grupos():
+def pedir_productos_sku(sku, cantidad, url_changed=False):
     datos = productos()
+    productores = datos[sku]["productores"]
+    if datos[sku]["propio"] != True:
+        for grupo in productores:
+            try:
+                result = get_inventories_grupox(grupo)
+                if result.status_code == 200 or result.status_code == 201:
+                    #print("GRUPO", grupo, result.json())
+                    result_2 = pedir_prod_grupox(sku, cantidad, grupo)
+
+                else:
+                    pass
+            except:
+                pass
+    else:
+        cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
+        #print(fabricarSinPago(sku, cantidad))
+
+
+def pedir_stock_minimo_grupos():
     pedir = generar_dict_compras()
+    print(pedir)
     liberar_recepcion()
+    # Se revisan los tiempos de los pedidos y se cambia de proveedor en caso de no cumplir
     for sku, cantidad in pedir.items():
-        print(datos[sku]['nombre'], sku)
-        pedir_productos_sku(sku, 3)
+        #print("sku", sku, "cantidad", cantidad)
+        pedir_productos_sku(sku, 1)
         liberar_recepcion()
-        enviar_fabricar()
-        print(" ")
-"""
-"""
-pedir_stock_minimo_grupos()
 
-enviar_fabricar()
-liberar_recepcion()
-
-#####PALTA
-for i in range(34):
-    pedir_productos_sku('1010', 1)
-liberar_recepcion()
-for i in range(50):
-    pedir_productos_sku('1012', 1)
-
-
-
-i = 0
-while i < 15:
-    mover_entre_almacenes("1003",86,almacen_id_dict["almacen_1"],almacen_id_dict["despacho"])
-    vaciar_almacen_despacho(['1003'])
-    i += 1
-
-"""
+#pedir_productos_sku("1003", 3)
+#pedir = generar_dict_compras()
+#print(revisarBodega().json())
+#print(pedir)
+#pedir_stock_minimo_grupos()

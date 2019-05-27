@@ -1,17 +1,27 @@
 from __future__ import absolute_import, unicode_literals
 from celery import task
 import requests
-from .funciones_bodega import *
+from .funciones.pedir_grupo import *
+from .funciones.fabricar import *
+
 
 @task
 def pedir_stock_minimo_grupos():
     pedir = generar_dict_compras()
-    liberar_recepcion()
+    liberar_almacen("recepcion")
+    # Se revisan los tiempos de los pedidos y se cambia de proveedor en caso de no cumplir
     for sku, cantidad in pedir.items():
         pedir_productos_sku(sku, 3)
-        pedir_productos_sku(sku, 3, url_changed=True)
-        liberar_recepcion()
+        liberar_almacen("rececpcion")
 
 @task
 def crear_productos():
     enviar_fabricar()
+
+@task
+def pedir_profesor():
+    pedir = generar_dict_compras()
+    liberar_almacen("recepcion")
+    for sku, cantidad in pedir.items():
+        pedir_prod_profesor(sku, cantidad)
+        liberar_almacen("recepcion")
