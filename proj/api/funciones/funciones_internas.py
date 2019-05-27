@@ -5,8 +5,8 @@ import base64
 import json
 import math
 import time
-from requests_files import *
-from datos import *
+from .requests_files import *
+from .datos import *
 
 def obtener_id_producto(sku, cantidad, almacenId):
     #lista de almacenes con el producto
