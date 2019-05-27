@@ -72,7 +72,7 @@ class InventoriesView(APIView):
     def get(self, request):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
-        lista = stock_fixed()
+        lista = stock(view = True)
         return JsonResponse(lista, status=200, safe=False)
 
 
