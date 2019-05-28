@@ -11,12 +11,12 @@ api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
 api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 
-almacen_id_dict = {"recepcion" : "5cc7b139a823b10004d8e6d3",
-                    "despacho" : "5cc7b139a823b10004d8e6d4",
-                    "almacen_1" : "5cc7b139a823b10004d8e6d5",
-                    "almacen_2" : "5cc7b139a823b10004d8e6d6",
-                    "pulmon" : "5cc7b139a823b10004d8e6d7",
-                    "cocina" : "5cc7b139a823b10004d8e6d8"}
+almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
+                    "despacho" : "5cbd3ce444f67600049431ba",
+                    "almacen_1" : "5cbd3ce444f67600049431bb",
+                    "almacen_2" : "5cbd3ce444f67600049431bc",
+                    "pulmon" : "5cbd3ce444f67600049431bd",
+                    "cocina" : "5cbd3ce444f67600049431be"}
 
 sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" : 170,
                     "1106" : 400,"1114" : 50,"1215" : 20,"1115" : 30,"1105" : 50,
@@ -104,11 +104,6 @@ def rechazar_oc(id_oc, motivo_rechazo):
     body = {"id": id_oc, "rechazo": motivo_rechazo}
     result = requests.post(url, headers=headers, data=json.dumps(body))
     return result.json()
-
-
-
-
-
 
 
 #ENTREGA SKU DE PRODUCTOS CON STOCK EN UN ALMACEN Y SU CANTIDAD
@@ -583,6 +578,72 @@ def vaciar_almacen_despacho(todos_productos):
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
             print(result)
+
+#a = productos()
+def cocinar_prod_sku(sku, cantidad):
+    hola = productos()
+    receta = hola[sku]['receta']
+    print(receta)
+    #Se obtienen los id y ubicación de cada sku y se guardan en skus_ids
+    skus_ids = dict() #Se guardarán de la forma {'sku': [12,43,54], 'sku':[32,45,12]}
+    for sku_receta in receta.keys(): #iteramos buscando los productos en los almacenes
+        lista_ids = ListaFijaVencimiento(receta[sku_receta]*cantidad) #creamos una lista de tamaño fijo con la cantidad de ese producto necesario
+        almacenes = ["recepcion","pulmon","almacen_2","almacen_1"]
+        for almacen in almacenes:
+            print(almacen)
+            print(type(sku_receta))
+            productos_1 = obtener_productos_almacen(almacen_id_dict[almacen], sku_receta)
+            print("mati")
+            print(productos_1) #retorna todos los id del sku buscado
+            for item in productos_1: #itera sobre cada producto individual, guardando su id
+                lista_ids.check_and_insert(item)
+                print("entre aca")
+        if lista_ids.cantidad() == receta[sku_receta]*cantidad: #si se tiene todos los elementos necesarios, se guarda una lista de sus ids
+            skus_ids[sku_receta] = lista_ids.ids()
+            print(sku_receta + "ok")
+        else: #si no se cumple con la cantidad, entonces se retorna falso
+            print("no se puede")
+            return False
+    #se envian todos los productos a cocina
+    for sku in skus_ids.keys():
+        for id in skus_ids[sku]:
+            mover_entre_almacenes_por_id(id, almacen_id_dict["cocina"])
+    #Se envian ingredientes a producir
+    print("hola123")
+    fabricarSinPago(sku, cantidad)
+    print("hola555")
+    return True
+
+
+# FUNCIONES AUXILIARES
+#Esta función se usa para mantener una lista con tamaño fijo, ordenada
+class ListaFijaVencimiento:
+    def __init__(self, max_size):
+        self.max_size = max_size
+        self.list = list()
+
+    def check_and_insert(self, new_elem):
+        index = 0
+        for inserted_elem in self.list:
+            if new_elem["vencimiento"] <= inserted_elem["vencimiento"]:
+                self.list.insert(index, new_elem)
+                actual_size = len(self.list)
+                if actual_size > self.max_size:
+                    self.list.pop()
+                break
+            index += 1
+        actual_size = len(self.list)
+        if actual_size < self.max_size:
+            self.list.append(new_elem)
+
+    def ids(self):
+        ids = list()
+        for elem in self.list:
+            ids.append(elem["_id"])
+        return ids
+
+    def cantidad(self):
+        return len(self.list)
 #print(cantidad_producto("1006"))
 
 #print(stock())
@@ -628,3 +689,6 @@ while i < 15:
     i += 1
 
 """
+
+print(obtener_productos_almacen("5cbd3ce444f67600049431bd","1201"))
+#cocinar_prod_sku("10001",1)
