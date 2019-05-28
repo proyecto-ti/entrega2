@@ -8,6 +8,69 @@ import time
 from .requests_files import *
 from .datos import *
 
+#Esta clase se usa para mantener una lista con tamaño fijo, ordenada
+class ListaFijaVencimiento:
+    def __init__(self, max_size):
+        self.max_size = max_size
+        self.list = list()
+
+    def check_and_insert(self, new_elem):
+        index = 0
+        for inserted_elem in self.list:
+            if new_elem["vencimiento"] <= inserted_elem["vencimiento"]:
+                self.list.insert(index, new_elem)
+                actual_size = len(self.list)
+                if actual_size > self.max_size:
+                    self.list.pop()
+                break
+            index += 1
+        actual_size = len(self.list)
+        if actual_size < self.max_size:
+            self.list.append(new_elem)
+
+    def ids(self):
+        ids = list()
+        for elem in self.list:
+            ids.append(elem["_id"])
+        return ids
+
+    def cantidad(self):
+        return len(self.list)
+
+def cocinar_prod_sku(sku, cantidad):
+    hola = productos()
+    receta = hola[sku]['receta']
+    #Se obtienen los id y ubicación de cada sku y se guardan en skus_ids
+    skus_ids = dict() #Se guardarán de la forma {'sku': [12,43,54], 'sku':[32,45,12]}
+    for sku_receta in receta.keys(): #iteramos buscando los productos en los almacenes
+        lista_ids = ListaFijaVencimiento(receta[sku_receta]*cantidad) #creamos una lista de tamaño fijo con la cantidad de ese producto necesario
+        almacenes = ["cocina","recepcion","pulmon","almacen_2","almacen_1"]
+        for almacen in almacenes:
+            productos_1 = obtener_productos_almacen(almacen_id_dict[almacen], sku_receta)
+            for item in productos_1: #itera sobre cada producto individual, guardando su id
+                lista_ids.check_and_insert(item)
+        if lista_ids.cantidad() == receta[sku_receta]*cantidad: #si se tiene todos los elementos necesarios, se guarda una lista de sus ids
+            skus_ids[sku_receta] = lista_ids.ids()
+        else: #si no se cumple con la cantidad, entonces se retorna falso
+            print("No se encontraron la cantidad de productos necesarios")
+            return False
+    #se envian todos los productos a cocina
+    for sku in skus_ids.keys():
+        for id in skus_ids[sku]:
+            mover_entre_almacenes_por_id(id, almacen_id_dict["cocina"])
+    #Se envian ingredientes a producir
+    print(fabricarSinPago(sku, cantidad))
+    return True
+
+""" PRUEBA FUNCION COCINA
+for dict in stock():
+    if dict["sku"] == "10001":
+        print(dict)
+print(obtener_sku_con_stock(almacen_id_dict["cocina"]))
+print(obtener_sku_con_stock(almacen_id_dict["despacho"]))
+"""
+
+
 def obtener_id_producto(sku, cantidad, almacenId):
     #lista de almacenes con el producto
     cantidad_id = 0

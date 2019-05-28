@@ -176,6 +176,14 @@ def request_mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, productoId
     body = {"productoId": productoId, "almacenId": almacenId_destino, "oc": oc, "precio": precio}
     respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
 
+def mover_entre_almacenes_por_id(productoId, almacenId_destino):
+    message = 'POST' + productoId + almacenId_destino
+    url = '{}moveStock'.format(api_url_base)
+    headers_ = {'Content-Type': 'application/json',
+                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    body = {"productoId": productoId, "almacenId": almacenId_destino}
+    requests.post(url, headers=headers_, data=json.dumps(body))
+
 #función despachar de la documentación
 def despachar_producto(almacenId_destino, oc, productoId, precio=1):
     message = 'DELETE' + productoId + almacenId_destino + precio + oc
