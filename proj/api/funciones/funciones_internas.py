@@ -5,8 +5,8 @@ import base64
 import json
 import math
 import time
-from .requests_files import *
-from .datos import *
+from requests_files import *
+from datos import *
 
 #Esta clase se usa para mantener una lista con tamaño fijo, ordenada
 class ListaFijaVencimiento:
@@ -54,14 +54,13 @@ def cocinar_prod_sku(sku_original, cantidad):
         else: #si no se cumple con la cantidad, entonces se retorna falso
             print("No se encontraron la cantidad de productos necesarios")
             return False
-
     #se envian todos los productos a cocina
     for sku in skus_ids.keys():
         for id in skus_ids[sku]:
             mover_entre_almacenes_por_id(id, almacen_id_dict["cocina"])
     #Se envian ingredientes a producir
-
     print(fabricarSinPago(sku_original, cantidad))
+    return True
 
 
 #print(revisarBodega().json())
@@ -267,8 +266,7 @@ def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
         request_mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, productoId, precio=1)
 
 def completar_oc(oc):
-    datos_oc = obtener_oc(oc)
-
+    datos_oc = obtener_oc(oc).json()
     id_productos = obtener_id_producto(datos_oc["sku"], datos_oc["cantidad"], almacen_id_dict["cocina"])
     cantidad_cocina = len(id_productos)
     if cantidad_cocina < datos_oc["cantidad"]:
