@@ -8,6 +8,7 @@ import time
 from .funciones_internas import *
 from .datos import *
 
+
 def enviar_fabricar():
     productos_ = productos()
     stock2 = stock()
@@ -32,7 +33,6 @@ def enviar_fabricar():
                 se_puede_pedir = True
 
                 for sku in productos_[element]["receta"]:
-                    print(sku)
                     unitario = productos_[element]["receta"][sku]
                     if devolver_cantidad(stock2, str(sku)) < unitario:
                         se_puede_pedir = False
@@ -40,9 +40,9 @@ def enviar_fabricar():
 
                 if se_puede_pedir:
                     for sku in productos_[element]["receta"]:
-                        buscar_mover_producto("despacho", str(sku), productos_[element]["receta"][sku])
-                        print(sku, quantity, element)
-                    print(fabricarSinPago(element,lote))
+                        for i in range (productos_[element]["receta"][sku]):
+                            buscar_mover_producto("despacho", str(sku), 1)
+                    fabricarSinPago(element,lote)
 
                 else:
                     break
@@ -51,4 +51,14 @@ def enviar_fabricar():
     else:
         pass
 
-enviar_fabricar()
+#liberar_almacen("recepcion")
+#print(enviar_fabricar())
+## print(buscar_mover_producto("despacho", "1007", 1))
+#
+#
+# print(obtener_productos_almacen(almacen_id_dict["despacho"], "1007"))
+# print(obtener_productos_almacen(almacen_id_dict["recepcion"], "1007"))
+# print(obtener_productos_almacen(almacen_id_dict["cocina"], "1007"))
+# print(obtener_productos_almacen(almacen_id_dict["almacen_1"], "1007"))
+# print(obtener_productos_almacen(almacen_id_dict["almacen_2"], "1007"))
+# print(obtener_productos_almacen(almacen_id_dict["pulmon"], "1007"))

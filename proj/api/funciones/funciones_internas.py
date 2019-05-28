@@ -114,6 +114,7 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
     #cantidad que se ha envidado a despacho
     datos_bodegas = revisarBodega().json()
     capacidad_despacho = datos_bodegas[1]['totalSpace'] - datos_bodegas[1]['usedSpace']
+    print(capacidad_despacho)
     if capacidad_despacho == 0:
         return
     elif capacidad_despacho >= cantidad:
@@ -126,7 +127,9 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
         if producto['_id'] == sku:
             if producto['total'] >= cantidad_despachar:
                 # se tiene la cantidad que se necesita
-                return mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["pulmon"], almacen_id_dict[almacen_destino])
+                print("asda")
+                mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["pulmon"], almacen_id_dict[almacen_destino])
+                return
 
             elif producto['total'] < cantidad_despachar:
                 # no se tiene la cantidad que se necesita, se manda lo que se tiene
@@ -135,11 +138,13 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
             break
     #revisa si producto esta en recepcion
     lista_recepcion = obtener_sku_con_stock(almacen_id_dict["recepcion"])
-    for producto in lista_pulmon:
+    for producto in lista_recepcion:
         if producto['_id'] == sku:
             if producto['total'] >= cantidad_despachar:
                 # se tiene la cantidad que se necesita
-                return mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["recepcion"], almacen_id_dict[almacen_destino])
+                print("asda")
+                mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["recepcion"], almacen_id_dict[almacen_destino])
+                return
 
             elif producto['total'] < cantidad_despachar:
                 # no se tiene la cantidad que se necesita, se manda lo que se tiene
@@ -152,7 +157,9 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
         if producto['_id'] == sku:
             if producto['total'] >= cantidad_despachar:
                 #se tiene la cantidad que se necesita
-                return mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["almacen_1"], almacen_id_dict[almacen_destino])
+                print("asda")
+                mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["almacen_1"], almacen_id_dict[almacen_destino])
+                return
 
             elif producto['total'] < cantidad_despachar:
                 #no se tiene la cantidad que se necesita, se manda lo que se tiene
@@ -165,7 +172,9 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
         if producto['_id'] == sku:
             if producto['total'] >= cantidad_despachar:
                 # se tiene la cantidad que se necesita
-                return mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["almacen_2"], almacen_id_dict[almacen_destino])
+                print("asda")
+                mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["almacen_2"], almacen_id_dict[almacen_destino])
+                return
 
             elif producto['total'] < cantidad_despachar:
                 # no se tiene la cantidad que se necesita, se manda lo que se tiene

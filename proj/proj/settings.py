@@ -145,11 +145,11 @@ CELERY_BEAT_SCHEDULE = {
     },
     'crear_productos': {
         'task': 'api.tasks.crear_productos',
-        'schedule': 60*8,
+        'schedule': 60*5,
     },
     'pedir_profesor': {
         'task': 'api.tasks.pedir_profesor',
-        'schedule': 60*15,
+        'schedule': 60*60,
     }
 }
 

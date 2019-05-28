@@ -103,5 +103,10 @@ def pedir_stock_minimo_grupos():
         pedir_productos_sku(sku, 3  )
         liberar_almacen("recepcion")
 
-#pedir_productos_sku("1012", 3)
+
+#pedir_productos_sku("1007", 3)
+#pedir_productos_sku("1007", 3)
+
+
+
 #pedir_stock_minimo_grupos()
