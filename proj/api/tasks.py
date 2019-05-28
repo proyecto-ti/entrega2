@@ -12,7 +12,7 @@ def pedir_stock_minimo_grupos():
     # Se revisan los tiempos de los pedidos y se cambia de proveedor en caso de no cumplir
     for sku, cantidad in pedir.items():
         pedir_productos_sku(sku, 3)
-        liberar_almacen("rececpcion")
+        liberar_almacen("recepcion")
 
 @task
 def crear_productos():

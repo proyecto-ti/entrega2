@@ -37,9 +37,9 @@ class ListaFijaVencimiento:
     def cantidad(self):
         return len(self.list)
 
-def cocinar_prod_sku(sku, cantidad):
-    hola = productos()
-    receta = hola[sku]['receta']
+def cocinar_prod_sku(sku_original, cantidad):
+    productos_ = productos()
+    receta = productos_[sku_original]['receta']
     #Se obtienen los id y ubicación de cada sku y se guardan en skus_ids
     skus_ids = dict() #Se guardarán de la forma {'sku': [12,43,54], 'sku':[32,45,12]}
     for sku_receta in receta.keys(): #iteramos buscando los productos en los almacenes
@@ -54,13 +54,27 @@ def cocinar_prod_sku(sku, cantidad):
         else: #si no se cumple con la cantidad, entonces se retorna falso
             print("No se encontraron la cantidad de productos necesarios")
             return False
+
     #se envian todos los productos a cocina
     for sku in skus_ids.keys():
         for id in skus_ids[sku]:
             mover_entre_almacenes_por_id(id, almacen_id_dict["cocina"])
     #Se envian ingredientes a producir
-    print(fabricarSinPago(sku, cantidad))
-    return True
+
+    print(fabricarSinPago(sku_original, cantidad))
+
+
+#print(revisarBodega().json())
+#
+# cocinar_prod_sku("30001", 1)
+#
+# for items in obtener_productos_almacen(almacen_id_dict["cocina"], "1307"):
+#     print(items["vencimiento"])
+#print(obtener_productos_almacen(almacen_id_dict["recepcion"], "1307"):)
+# print(obtener_productos_almacen(almacen_id_dict["cocina"], "1307"))
+# print(obtener_productos_almacen(almacen_id_dict["almacen_1"], "1307"))
+# print(obtener_productos_almacen(almacen_id_dict["almacen_2"], "1307"))
+# print(obtener_productos_almacen(almacen_id_dict["pulmon"], "1307"))
 
 """ PRUEBA FUNCION COCINA
 for dict in stock():
@@ -127,7 +141,6 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
         if producto['_id'] == sku:
             if producto['total'] >= cantidad_despachar:
                 # se tiene la cantidad que se necesita
-                print("asda")
                 mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["pulmon"], almacen_id_dict[almacen_destino])
                 return
 
@@ -142,7 +155,6 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
         if producto['_id'] == sku:
             if producto['total'] >= cantidad_despachar:
                 # se tiene la cantidad que se necesita
-                print("asda")
                 mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["recepcion"], almacen_id_dict[almacen_destino])
                 return
 
@@ -157,7 +169,6 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
         if producto['_id'] == sku:
             if producto['total'] >= cantidad_despachar:
                 #se tiene la cantidad que se necesita
-                print("asda")
                 mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["almacen_1"], almacen_id_dict[almacen_destino])
                 return
 
@@ -172,7 +183,6 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
         if producto['_id'] == sku:
             if producto['total'] >= cantidad_despachar:
                 # se tiene la cantidad que se necesita
-                print("asda")
                 mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["almacen_2"], almacen_id_dict[almacen_destino])
                 return
 
@@ -227,6 +237,9 @@ def stock(view = False):
             lista.append({"sku": str(sku), "nombre": str(datos[sku]["nombre"]), "total": total})
 
     return lista
+
+for items in stock():
+    print(items)
 
 def entregar_id_almacen(almacen):
     revisar_bodega = revisarBodega()
