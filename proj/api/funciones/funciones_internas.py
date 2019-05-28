@@ -121,8 +121,6 @@ def cantidad_producto(sku):
                 break
     return cantidad
 
-
-
 def update_dictionary_stocks(dictionary, stock_type):
     for sku in stock_type:
         if not sku["_id"] in dictionary:
@@ -136,11 +134,15 @@ def stock(view = False):
     stock_almacen_1 = obtener_sku_con_stock(almacen_id_dict['almacen_1'])
     stock_almacen_2 = obtener_sku_con_stock(almacen_id_dict['almacen_2'])
     stock_pulmon = obtener_sku_con_stock(almacen_id_dict['pulmon'])
+    stock_cocina =  obtener_sku_con_stock(almacen_id_dict['cocina'])
+
 
     dict = update_dictionary_stocks({}, stock_recepcion)
     dict = update_dictionary_stocks(dict, stock_almacen_1)
     dict = update_dictionary_stocks(dict, stock_almacen_2)
     dict = update_dictionary_stocks(dict, stock_pulmon)
+    dict = update_dictionary_stocks(dict, stock_cocina)
+
 
 
     datos = productos()
