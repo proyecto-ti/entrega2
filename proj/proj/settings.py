@@ -150,6 +150,10 @@ CELERY_BEAT_SCHEDULE = {
     'pedir_profesor': {
         'task': 'api.tasks.pedir_profesor',
         'schedule': 60*60,
+    },
+    'cocinar': {
+        'task': 'api.tasks.cocinar',
+        'schedule': 60*4,
     }
 }
 

@@ -25,3 +25,7 @@ def pedir_profesor():
     for sku, cantidad in pedir.items():
         pedir_prod_profesor(sku, cantidad)
         liberar_almacen("recepcion")
+
+@task
+def cocinar():
+    print("hoal")

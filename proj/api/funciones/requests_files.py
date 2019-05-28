@@ -7,15 +7,26 @@ import math
 import time
 
 api_key = 'A#soL%kRvHX2qHm'
-api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
-api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
+# api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
+# api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 
-almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
-                    "despacho" : "5cbd3ce444f67600049431ba",
-                    "almacen_1" : "5cbd3ce444f67600049431bb",
-                    "almacen_2" : "5cbd3ce444f67600049431bc",
-                    "pulmon" : "5cbd3ce444f67600049431bd",
-                    "cocina" : "5cbd3ce444f67600049431be"}
+api_url_base = 'https://integracion-2019-prod.herokuapp.com/bodega/'
+api_oc_url_base = 'https://integracion-2019-prod.herokuapp.com/oc/'
+
+
+# almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
+#                     "despacho" : "5cbd3ce444f67600049431ba",
+#                     "almacen_1" : "5cbd3ce444f67600049431bb",
+#                     "almacen_2" : "5cbd3ce444f67600049431bc",
+#                     "pulmon" : "5cbd3ce444f67600049431bd",
+#                     "cocina" : "5cbd3ce444f67600049431be"}
+
+almacen_id_dict = {"recepcion" : "5cc7b139a823b10004d8e6d3",
+                    "despacho" : "5cc7b139a823b10004d8e6d4",
+                    "almacen_1" : "5cc7b139a823b10004d8e6d5",
+                    "almacen_2" : "5cc7b139a823b10004d8e6d6",
+                    "pulmon" : "5cc7b139a823b10004d8e6d7",
+                    "cocina" : "5cc7b139a823b10004d8e6d8"}
 
 sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" : 170,
                     "1106": 400,"1114": 50,"1215" : 20,"1115" : 30,"1105" : 50,
