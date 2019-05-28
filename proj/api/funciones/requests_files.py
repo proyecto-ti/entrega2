@@ -177,7 +177,7 @@ def request_mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, productoId
     respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
 
 #función despachar de la documentación
-def despachar_producto(sku, cantidad, almacenId_destino, oc, productoId, precio=1):
+def despachar_producto(almacenId_destino, oc, productoId, precio=1):
     message = 'DELETE' + productoId + almacenId_destino + precio + oc
     url = '{}stock'.format(api_url_base)
     headers_ = {'Content-Type': 'application/json',
