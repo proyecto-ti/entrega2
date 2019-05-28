@@ -74,10 +74,9 @@ def pedir_productos_sku(sku, cantidad, url_changed=False):
     if datos[sku]["propio"] != True:
         for grupo in productores:
             try:
-                print("jadjs")
                 result = get_inventories_grupox(grupo)
                 if result.status_code == 200 or result.status_code == 201:
-                    #print("GRUPO", grupo, result.json())
+                    print("GRUPO", grupo, result.json())
                     result_2 = pedir_prod_grupox(sku, cantidad, grupo)
 
                 else:
@@ -92,6 +91,7 @@ def pedir_prod_profesor(sku, cantidad):
     datos = productos()
     productores = datos[sku]["productores"]
     if datos[sku]["propio"] == True:
+        print("SKU", sku, "Cantidad", cantidad)
         cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
         fabricarSinPago(sku, cantidad)
 
