@@ -83,10 +83,10 @@ def verficar():
 				completar_oc(orden[0])
 			else:
 				pass
-	with open("id_aceptados.txt",mode = "w") as file:
-		for ordenes_espera in lista_id:
-			string = ordenes_espera.join(",")
-			file.write(string +"\n")
+		with open("id_aceptados.txt",mode = "w") as file:
+			for ordenes_espera in lista_id:
+				string = ordenes_espera.join(",")
+				file.write(string +"\n")
 
 def convertir_time(time):
     datetime_obj = strptime("{}".format(time), '%Y-%m-%dT%H:%M:%S.%fZ')
