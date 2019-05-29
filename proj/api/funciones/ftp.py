@@ -88,7 +88,7 @@ def verificar():
 				pass
 		with open(".id_aceptados.txt",mode = "w") as file:
 			for ordenes_espera in lista_id:
-				string = ordenes_espera.join(",")
+				string = ",".join(ordenes_espera)
 				file.write(string +"\n")
 
 def convertir_time(time):
