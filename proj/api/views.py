@@ -38,6 +38,7 @@ sku_stock_dict = {  "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" :
                     "1210" : 150,"1112" : 130,"1108" : 10,"1407" : 40,"1207" : 20,
                     "1107" : 50,"1307" : 170,"1211" : 60}
 
+sku_min_entregar = {"1001": 30, "1002": 30, "1006": 30, "1010": 30, "1011": 30, "1012": 30, "1014": 30, "1016": 30}
 
 def inventories_view(request):
     lista = stock()
@@ -83,6 +84,15 @@ class InventoriesView(APIView):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
         lista = stock(view = True)
+
+        lista_aux = []
+        for producto in lista:
+            sku = producto["sku"]
+            total = producto["total"]
+            if total > sku_min_entregar[sku]:
+                producto["total"] = producto["total"] - sku_min_entregar[sku]
+                lista_aux.append(producto)
+
         return JsonResponse(lista, status=200, safe=False)
 
 
@@ -105,7 +115,7 @@ class OrdersView(APIView):
             aviso_rechazar_pedido(oc, grupo)
             return Response(data="No producimos productos con ese sku", status=404)
 
-        elif cantidad > cantidad_producto(sku):
+        elif cantidad > cantidad_producto(sku) - sku_min_entregar[sku]:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2",

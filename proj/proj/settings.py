@@ -26,7 +26,7 @@ SECRET_KEY = '#d=*wkg9ytfk^m2if*@d52m7#5&a+*x=(u@m&hf)g$y*9upo%&'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-'tuerca2.ing.puc.cl'
+'tuerca2.ing.puc.cl', '*'
 ]
 
 
@@ -145,11 +145,11 @@ CELERY_BEAT_SCHEDULE = {
     },
     'crear_productos': {
         'task': 'api.tasks.crear_productos',
-        'schedule': 60*20,
+        'schedule': 60*12,
     },
     'pedir_profesor': {
         'task': 'api.tasks.pedir_profesor',
-        'schedule': 60*60,
+        'schedule': 60*15,
     },
     'cocinar': {
         'task': 'api.tasks.cocinar',
