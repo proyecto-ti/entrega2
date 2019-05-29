@@ -1,14 +1,17 @@
 import pysftp
 from xml.dom import minidom
 from funciones_internas import  stock , cantidad_producto , cocinar_prod_sku, completar_oc
-from requests_files import rechazar_oc , obtener_oc , recepcionar_oc, 
+from requests_files import rechazar_oc , obtener_oc , recepcionar_oc
 from time import *
 
 
-myHostname = "fierro.ing.puc.cl"
-myUsername = "grupo2_dev"
-myPassword = "jefPFs1p7mSt8rx"
+#myHostname = "fierro.ing.puc.cl"
+#myUsername = "grupo2_dev"
+#myPassword = "jefPFs1p7mSt8rx"
 
+myHostname = "fierro.ing.puc.cl"
+myUsername = "grupo2"
+myPassword = "Cs8WSk2RgpQGUTNJ2"
 
 #funcion que va verificando si hay nuevas ordenes.
 def ver_buzon():
@@ -43,11 +46,9 @@ def ver_buzon():
 		
 
 def logica_oc(id_compra):
-	orden = obtener_oc(id_compra)
+	orden = obtener_oc(id_compra).json()
 	sku = orden[0]["sku"]
 	qty = orden[0]["cantidad"]
-	print(sku)
-	print(qty)
 	fecha = orden[0]["fechaEntrega"]
 	if not tiempo_real(fecha):
 		rechazar_oc(id_compra,"fecha")
@@ -77,17 +78,18 @@ def verficar():
 			nueva_linea = linea.replace("\n","")
 			nueva_lista = nueva_linea.split(",")
 			lista_id.append(nueva_lista)
-	for orden in lista_id:
-		if orden[2] <= cantidad_producto(orden[1]):
-			index = lista_id.index(orden)
-			lista_id.pop(index)
-			completar_oc(orden[0])
-		else:
-			pass
-	with open("id_aceptados.txt",mode = "w") as file:
-		for ordenes_espera in lista_id:
-			string = ordenes_espera.join(",")
-			file.write(string +"\n")
+	if lista_id != []:
+		for orden in lista_id:
+			if orden[2] <= cantidad_producto(orden[1]):
+				index = lista_id.index(orden)
+				lista_id.pop(index)
+				completar_oc(orden[0])
+			else:
+				pass
+		with open("id_aceptados.txt",mode = "w") as file:
+			for ordenes_espera in lista_id:
+				string = ordenes_espera.join(",")
+				file.write(string +"\n")
 
 def convertir_time(time):
     datetime_obj = strptime("{}".format(time), '%Y-%m-%dT%H:%M:%S.%fZ')
