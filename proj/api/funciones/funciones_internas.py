@@ -5,8 +5,8 @@ import base64
 import json
 import math
 import time
-from requests_files import *
-from datos import *
+from .requests_files import *
+from .datos import *
 
 #Esta clase se usa para mantener una lista con tamaño fijo, ordenada
 class ListaFijaVencimiento:
