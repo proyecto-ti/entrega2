@@ -19,7 +19,7 @@ def ver_buzon():
 	cnopts.hostkeys = None    # disable host key checking.
 	lista_ids = []
 	#que pasa si el archivo no esta creado.
-	with open (".id_estados.txt",mode = "r") as file:
+	with open ("/id_estados.txt",mode = "r") as file:
 		for linea in file:
 			nueva = linea.replace("\n","")
 			lista_ids.append(nueva)
@@ -64,16 +64,16 @@ def logica_oc(id_compra):
 #ingredientes
 
 def escribir_txt_gen(id_):
-	with open (".id_estados.txt",mode = "a") as file:
+	with open ("/id_estados.txt",mode = "a") as file:
 		file.write(id_ +"\n")
 
 def escribir_txt_acep(id_compra,sku,qty):
-	with open(".id_aceptados.txt",mode = "a") as file:
+	with open("/id_aceptados.txt",mode = "a") as file:
 		file.write(id_compra+","+str(sku)+","+str(qty)+  "\n")
 
 def verificar():
 	lista_id = []
-	with open(".id_aceptados.txt",mode = "r") as file:
+	with open("/id_aceptados.txt",mode = "r") as file:
 		for linea in file:
 			nueva_linea = linea.replace("\n","")
 			nueva_lista = nueva_linea.split(",")
@@ -86,7 +86,7 @@ def verificar():
 				completar_oc(orden[0])
 			else:
 				pass
-		with open(".id_aceptados.txt",mode = "w") as file:
+		with open("/id_aceptados.txt",mode = "w") as file:
 			for ordenes_espera in lista_id:
 				string = ",".join(ordenes_espera)
 				file.write(string +"\n")
