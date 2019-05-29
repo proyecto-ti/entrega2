@@ -115,7 +115,7 @@ class OrdersView(APIView):
             aviso_rechazar_pedido(oc, grupo)
             return Response(data="No producimos productos con ese sku", status=404)
 
-        elif cantidad > cantidad_producto(sku) - sku_min_entregar[sku]:
+        elif int(cantidad) > (int(cantidad_producto(sku)) - int(sku_min_entregar[sku])):
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2",
