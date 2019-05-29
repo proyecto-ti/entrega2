@@ -93,7 +93,7 @@ class InventoriesView(APIView):
                 producto["total"] = producto["total"] - sku_min_entregar[sku]
                 lista_aux.append(producto)
 
-        return JsonResponse(lista, status=200, safe=False)
+        return JsonResponse(lista_aux, status=200, safe=False)
 
 
 # Cuando hagan post con POSTMAN hay que ponerle un / al final de la URL, así:
