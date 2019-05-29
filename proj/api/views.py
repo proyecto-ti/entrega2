@@ -24,7 +24,7 @@ name_sku_dict = {"Sesamo": "1011",
 #                      "5cbd3ce444f67600049431be" : "cocina"}
 
 #PRODUCCION
-almacen_id_dict = {"5cc7b139a823b10004d8e6d3" : "recepcion",
+almacen_dict_id = {"5cc7b139a823b10004d8e6d3" : "recepcion",
                    "5cc7b139a823b10004d8e6d4" : "despacho",
                    "5cc7b139a823b10004d8e6d5" : "almacen_1",
                    "5cc7b139a823b10004d8e6d6" : "almacen_2",
