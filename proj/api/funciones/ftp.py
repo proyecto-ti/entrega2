@@ -1,7 +1,7 @@
 import pysftp
 from xml.dom import minidom
-from funciones_internas import  stock , cantidad_producto , cocinar_prod_sku, completar_oc
-from requests_files import rechazar_oc , obtener_oc , recepcionar_oc
+from .funciones_internas import  stock , cantidad_producto , cocinar_prod_sku, completar_oc
+from .requests_files import rechazar_oc , obtener_oc , recepcionar_oc
 from time import *
 
 
