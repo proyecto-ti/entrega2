@@ -203,7 +203,7 @@ def despachar_producto(almacenId_destino, oc, productoId, precio=1):
     headers_ = {'Content-Type': 'application/json',
                 'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     body = {"productoId": productoId, "oc": oc, "direccion": almacenId_destino, "precio": precio}
-    respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
+    respuesta = requests.delete(url, headers=headers_, data=json.dumps(body))
 
 
 # BUSCA INVENTARIO DE UN GRUPO
