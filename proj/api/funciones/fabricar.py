@@ -5,8 +5,8 @@ import base64
 import json
 import math
 import time
-from funciones_internas import *
-from datos import *
+from .funciones_internas import *
+from .datos import *
 
 
 def enviar_fabricar():
