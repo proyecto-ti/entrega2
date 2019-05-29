@@ -267,11 +267,12 @@ def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
 
 def completar_oc(oc):
     datos_oc = obtener_oc(oc).json()
-    id_productos = obtener_id_producto(datos_oc["sku"], datos_oc["cantidad"], almacen_id_dict["cocina"])
+    id_productos = obtener_id_producto(datos_oc[0]["sku"], datos_oc[0]["cantidad"], almacen_id_dict["cocina"])
     cantidad_cocina = len(id_productos)
-    if cantidad_cocina < datos_oc["cantidad"]:
+    if cantidad_cocina < datos_oc[0]["cantidad"]:
         # dunciona solo en caso de que se despache desde pulmon !!!!
-        ids_pulmon = obtener_id_producto(datos_oc["sku"], datos_oc["cantidad"] - cantidad_cocina, almacen_id_dict["cocina"])
+        ids_pulmon = obtener_id_producto(datos_oc[0]["sku"], datos_oc[0]["cantidad"] - cantidad_cocina, almacen_id_dict["cocina"])
         id_productos.extend(ids_pulmon)
     for id in id_productos:
-        despachar_producto(datos_oc["cliente"], oc, id, precio=1)
+        despachar_producto(datos_oc[0]["cliente"], oc, id, precio=1)
+

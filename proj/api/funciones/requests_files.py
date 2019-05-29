@@ -7,15 +7,27 @@ import math
 import time
 
 api_key = 'A#soL%kRvHX2qHm'
-api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
-api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
+# api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
+# api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 
-almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
-                    "despacho" : "5cbd3ce444f67600049431ba",
-                    "almacen_1" : "5cbd3ce444f67600049431bb",
-                    "almacen_2" : "5cbd3ce444f67600049431bc",
-                    "pulmon" : "5cbd3ce444f67600049431bd",
-                    "cocina" : "5cbd3ce444f67600049431be"}
+api_url_base = 'https://integracion-2019-prod.herokuapp.com/bodega/'
+api_oc_url_base = 'https://integracion-2019-prod.herokuapp.com/oc/'
+
+
+# almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
+#                     "despacho" : "5cbd3ce444f67600049431ba",
+#                     "almacen_1" : "5cbd3ce444f67600049431bb",
+#                     "almacen_2" : "5cbd3ce444f67600049431bc",
+#                     "pulmon" : "5cbd3ce444f67600049431bd",
+#                     "cocina" : "5cbd3ce444f67600049431be"}
+
+almacen_id_dict = {"recepcion" : "5cc7b139a823b10004d8e6d3",
+                    "despacho" : "5cc7b139a823b10004d8e6d4",
+                    "almacen_1" : "5cc7b139a823b10004d8e6d5",
+                    "almacen_2" : "5cc7b139a823b10004d8e6d6",
+                    "pulmon" : "5cc7b139a823b10004d8e6d7",
+                    "cocina" : "5cc7b139a823b10004d8e6d8"}
+
 
 sku_stock_dict = {  "1101": 150, "1111": 150, "1301" : 80, "1201" : 270, "1209" : 50, "1109" : 80,"1309" : 190,
                     "1106": 440,"1114": 80,"1215" : 50,"1115" : 60,"1105" : 80,
@@ -27,7 +39,7 @@ sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"
 
 ordenes_por_confirmar = list()
 ordenes_aceptadas = list()
-mins_espera_pedido = 5
+mins_espera_pedido = 240
 
 # AMBIENTE DE DESARROLLO
 id_grupos = {1: "5cbd31b7c445af0004739be3", 2: "5cbd31b7c445af0004739be4", 3: "5cbd31b7c445af0004739be5",
@@ -186,7 +198,7 @@ def mover_entre_almacenes_por_id(productoId, almacenId_destino):
 
 #función despachar de la documentación
 def despachar_producto(almacenId_destino, oc, productoId, precio=1):
-    message = 'DELETE' + productoId + almacenId_destino + precio + oc
+    message = 'DELETE' + productoId + almacenId_destino + str(precio) + oc
     url = '{}stock'.format(api_url_base)
     headers_ = {'Content-Type': 'application/json',
                 'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
@@ -226,3 +238,6 @@ def vaciar_almacen_despacho(todos_productos):
                         'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
+
+
+print(obtener_oc("5ce833c179126c0004051425").json())

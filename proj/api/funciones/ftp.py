@@ -69,9 +69,9 @@ def escribir_txt_gen(id_):
 
 def escribir_txt_acep(id_compra,sku,qty):
 	with open("id_aceptados.txt",mode = "a") as file:
-		file.write(id_compra+","+sku+","+qty+  "\n")
+		file.write(id_compra+","+str(sku)+","+str(qty)+  "\n")
 
-def verficar():
+def verificar():
 	lista_id = []
 	with open("id_aceptados.txt",mode = "r") as file:
 		for linea in file:
@@ -80,7 +80,7 @@ def verficar():
 			lista_id.append(nueva_lista)
 	if lista_id != []:
 		for orden in lista_id:
-			if orden[2] <= cantidad_producto(orden[1]):
+			if int(orden[2]) <= cantidad_producto(orden[1]):
 				index = lista_id.index(orden)
 				lista_id.pop(index)
 				completar_oc(orden[0])
@@ -100,3 +100,5 @@ def tiempo_real(hora):
 		return True
 	else:
 		return False
+
+
