@@ -5,10 +5,13 @@ from requests_files import rechazar_oc , obtener_oc , recepcionar_oc
 from time import *
 
 
-myHostname = "fierro.ing.puc.cl"
-myUsername = "grupo2_dev"
-myPassword = "jefPFs1p7mSt8rx"
+#myHostname = "fierro.ing.puc.cl"
+#myUsername = "grupo2_dev"
+#myPassword = "jefPFs1p7mSt8rx"
 
+myHostname = "fierro.ing.puc.cl"
+myUsername = "grupo2"
+myPassword = "Cs8WSk2RgpQGUTNJ2"
 
 #funcion que va verificando si hay nuevas ordenes.
 def ver_buzon():
