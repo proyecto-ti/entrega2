@@ -127,8 +127,9 @@ def liberar_almacen(almacen):
 # MUEVE LA CANTIDAD QUE SE QUIERA DE UN SKU HACIA EL ALMACEN DE DESPACHO
 def buscar_mover_producto(almacen_destino, sku, cantidad):
     #cantidad que se ha envidado a despacho
+    cantidad = int(cantidad)
     datos_bodegas = revisarBodega().json()
-    capacidad_despacho = datos_bodegas[1]['totalSpace'] - datos_bodegas[1]['usedSpace']
+    capacidad_despacho = int(datos_bodegas[1]['totalSpace'] - datos_bodegas[1]['usedSpace'])
     print(capacidad_despacho)
     if capacidad_despacho == 0:
         return
