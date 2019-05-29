@@ -86,7 +86,7 @@ def pedir_productos_sku(sku, cantidad, url_changed=False):
     #    cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
         #print(fabricarSinPago(sku, cantidad))
 
-print(pedir_productos_sku("1001", 3))
+#print(pedir_productos_sku("1001", 3))
 
 def pedir_prod_profesor(sku, cantidad):
     datos = productos()
@@ -94,7 +94,7 @@ def pedir_prod_profesor(sku, cantidad):
     if datos[sku]["propio"] == True:
         print("SKU", sku, "Cantidad", cantidad)
         cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
-        fabricarSinPago(sku, cantidad)
+        print(fabricarSinPago(sku, cantidad))
 
 def pedir_stock_minimo_grupos():
     pedir = generar_dict_compras()
@@ -105,6 +105,14 @@ def pedir_stock_minimo_grupos():
         liberar_almacen("recepcion")
 
 
+def pedir_profesor():
+    pedir = generar_dict_compras()
+    liberar_almacen("recepcion")
+    for sku, cantidad in pedir.items():
+        pedir_prod_profesor(sku, cantidad)
+        liberar_almacen("recepcion")
+
+#pedir_profesor()
 #pedir_productos_sku("1007", 3)
 #pedir_productos_sku("1007", 3)
 

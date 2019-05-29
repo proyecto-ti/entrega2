@@ -143,18 +143,22 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'api.tasks.pedir_stock_minimo_grupos',
         'schedule': 60*10,
     },
+
     'crear_productos': {
         'task': 'api.tasks.crear_productos',
         'schedule': 60*12,
     },
+
     'pedir_profesor': {
         'task': 'api.tasks.pedir_profesor',
         'schedule': 60*15,
     },
+
     'cocinar_task': {
         'task': 'api.tasks.cocinar_task',
         'schedule': 60*5,
     },
+
     'verificar_task': {
         'task': 'api.tasks.verificar_task',
         'schedule': 60*10,

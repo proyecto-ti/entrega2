@@ -38,7 +38,7 @@ sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"
 
 ordenes_por_confirmar = list()
 ordenes_aceptadas = list()
-mins_espera_pedido = 5
+mins_espera_pedido = 240
 
 # AMBIENTE DE DESARROLLO
 """
