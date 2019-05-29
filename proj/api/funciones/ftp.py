@@ -23,7 +23,7 @@ def ver_buzon():
 		for linea in file:
 			nueva = linea.replace("\n","")
 			lista_ids.append(nueva)
-	with pysftp.Connection(myHostname, username=myUsername ,password=myPassword,cnopts=cnopts) as sftp : 
+	with pysftp.Connection(myHostname, username=myUsername ,password=myPassword,cnopts=cnopts) as sftp :
 		sftp.cwd('/pedidos')
 		structure = sftp.listdir_attr()
 		for element in structure:
@@ -34,7 +34,7 @@ def ver_buzon():
 				pass
 			else:
 				logica_oc(id_[0].firstChild.data)
-			
+
 			#archivo = sftp.open(element,mode = "r")
 			#my_doc = minidom.parse(archivo)
 			#id_ = my_doc.getElementsByTagName('id')
@@ -42,8 +42,8 @@ def ver_buzon():
 			#qty_ = my_doc.getElementsByTagName("qty")
 			#orden = obtener_oc(id_[0].firstChild.data)
 
-		
-		
+
+
 
 def logica_oc(id_compra):
 	orden = obtener_oc(id_compra).json()
@@ -69,9 +69,9 @@ def escribir_txt_gen(id_):
 
 def escribir_txt_acep(id_compra,sku,qty):
 	with open("id_aceptados.txt",mode = "a") as file:
-		file.write(id_compra+","+sku+","+qty+  "\n")
+		file.write(id_compra+","+str(sku)+","+str(qty)+  "\n")
 
-def verficar():
+def verificar():
 	lista_id = []
 	with open("id_aceptados.txt",mode = "r") as file:
 		for linea in file:
@@ -80,7 +80,7 @@ def verficar():
 			lista_id.append(nueva_lista)
 	if lista_id != []:
 		for orden in lista_id:
-			if orden[2] <= cantidad_producto(orden[1]):
+			if int(orden[2]) <= cantidad_producto(orden[1]):
 				index = lista_id.index(orden)
 				lista_id.pop(index)
 				completar_oc(orden[0])

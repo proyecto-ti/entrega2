@@ -198,7 +198,7 @@ def mover_entre_almacenes_por_id(productoId, almacenId_destino):
 
 #función despachar de la documentación
 def despachar_producto(almacenId_destino, oc, productoId, precio=1):
-    message = 'DELETE' + productoId + almacenId_destino + precio + oc
+    message = 'DELETE' + productoId + almacenId_destino + str(precio) + oc
     url = '{}stock'.format(api_url_base)
     headers_ = {'Content-Type': 'application/json',
                 'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
