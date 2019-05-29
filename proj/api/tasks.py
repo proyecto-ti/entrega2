@@ -3,7 +3,7 @@ from celery import task
 import requests
 from .funciones.pedir_grupo import *
 from .funciones.fabricar import *
-
+from .funciones.ftp import *
 
 @task
 def pedir_stock_minimo_grupos():
@@ -28,5 +28,10 @@ def pedir_profesor():
 
 
 @task
-def cocinar():
-    print("hoal")
+def cocinar_task():
+    liberar_almacen("cocina")
+    ver_buzon()
+
+@task
+def verificar_task():
+    verificar()

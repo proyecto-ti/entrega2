@@ -63,8 +63,9 @@ def cocinar_prod_sku(sku_original, cantidad):
 
     print(fabricarSinPago(sku_original, cantidad))
 
+    return True
 
-print(revisarBodega().json())
+#print(revisarBodega().json())
 #
 # cocinar_prod_sku("30001", 1)
 #
