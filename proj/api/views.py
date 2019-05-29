@@ -90,7 +90,7 @@ class InventoriesView(APIView):
             sku = producto["sku"]
             total = producto["total"]
             if total > sku_min_entregar[sku]:
-                producto["total"] = producto["total"] - sku_min_entregar[sku]
+                producto["total"] = 3
                 lista_aux.append(producto)
 
         return JsonResponse(lista_aux, status=200, safe=False)
@@ -106,7 +106,7 @@ class OrdersView(APIView):
         cantidad = request.data.get("cantidad")
         almacenId = request.data.get("almacenId")
         oc = request.data.get("oc")
-
+        print("pasando por acajajaj")
         if not sku or not cantidad or not almacenId or not oc:
             return Response(data="No se creó el pedido por un error del cliente en la solicitud", status=400)
 

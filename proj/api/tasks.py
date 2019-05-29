@@ -29,7 +29,8 @@ def pedir_profesor():
 
 @task
 def cocinar_task():
-    liberar_almacen("cocina")
+    escribir_txt_gen("jdaisdjao")
+    #liberar_almacen("cocina")
     ver_buzon()
 
 @task
