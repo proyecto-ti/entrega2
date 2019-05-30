@@ -82,6 +82,7 @@ def pedir_productos_sku(sku, cantidad, url_changed=False):
                 else:
                     pass
             except:
+
                 pass
 #    else:
     #    cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])

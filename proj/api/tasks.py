@@ -26,11 +26,11 @@ def pedir_profesor():
       pedir_prod_profesor(sku, 2)
       liberar_almacen("recepcion")
 
-
-@task
-def cocinar_task():
-    ver_buzon()
-
-@task
-def verificar_task():
-    verificar()
+# 
+# @task
+# def cocinar_task():
+#     ver_buzon()
+#
+# @task
+# def verificar_task():
+#     verificar()
