@@ -204,7 +204,7 @@ def despachar_producto(almacenId_destino, oc, productoId, precio=1):
                 'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     body = {"productoId": productoId, "oc": oc, "direccion": almacenId_destino, "precio": precio}
     respuesta = requests.delete(url, headers=headers_, data=json.dumps(body))
-
+    return 
 # BUSCA INVENTARIO DE UN GRUPO
 def get_inventories_grupox(grupo, url_changed=False):
     if not url_changed:
@@ -214,7 +214,7 @@ def get_inventories_grupox(grupo, url_changed=False):
 
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
     try:
-        result = requests.get(url, headers=headers_)
+        result = requests.get(url, headers=headers_, timeout = 8)
         return result
     except:
         return list()
@@ -223,7 +223,7 @@ def post_orders_grupox(grupo, oc_id, cantidad, sku):
     url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
     body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion'], 'oc': oc_id}
-    result = requests.post(url, headers=headers_, data=json.dumps(body))
+    result = requests.post(url, headers=headers_, data=json.dumps(body), timeout = 8)
     return result
 
 def vaciar_almacen_despacho(todos_productos):

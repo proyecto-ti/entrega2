@@ -127,9 +127,8 @@ def liberar_almacen(almacen):
 # MUEVE LA CANTIDAD QUE SE QUIERA DE UN SKU HACIA EL ALMACEN DE DESPACHO
 def buscar_mover_producto(almacen_destino, sku, cantidad):
     #cantidad que se ha envidado a despacho
-    cantidad = int(cantidad)
     datos_bodegas = revisarBodega().json()
-    capacidad_despacho = int(datos_bodegas[1]['totalSpace'] - datos_bodegas[1]['usedSpace'])
+    capacidad_despacho = datos_bodegas[1]['totalSpace'] - datos_bodegas[1]['usedSpace']
     print(capacidad_despacho)
     if capacidad_despacho == 0:
         return
@@ -191,6 +190,20 @@ def buscar_mover_producto(almacen_destino, sku, cantidad):
             elif producto['total'] < cantidad_despachar:
                 # no se tiene la cantidad que se necesita, se manda lo que se tiene
                 mover_entre_almacenes(sku, producto['total'], almacen_id_dict["almacen_2"], almacen_id_dict[almacen_destino])
+                cantidad_despachar -= producto['total']
+            break
+
+    lista_cocina = obtener_sku_con_stock(almacen_id_dict["cocina"])
+    for producto in lista_cocina:
+        if producto['_id'] == sku:
+            if producto['total'] >= cantidad_despachar:
+                # se tiene la cantidad que se necesita
+                mover_entre_almacenes(sku, cantidad_despachar, almacen_id_dict["cocina"], almacen_id_dict[almacen_destino])
+                return
+
+            elif producto['total'] < cantidad_despachar:
+                # no se tiene la cantidad que se necesita, se manda lo que se tiene
+                mover_entre_almacenes(sku, producto['total'], almacen_id_dict["cocina"], almacen_id_dict[almacen_destino])
                 cantidad_despachar -= producto['total']
             break
     return
@@ -269,12 +282,20 @@ def mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, precio=1):
         request_mover_entre_bodegas(sku, cantidad, almacenId_destino, oc, productoId, precio=1)
 
 def completar_oc(oc):
+    print("completa_oc")
     datos_oc = obtener_oc(oc).json()
-    id_productos = obtener_id_producto(datos_oc[0]["sku"], datos_oc[0]["cantidad"], almacen_id_dict["cocina"])
-    cantidad_cocina = len(id_productos)
-    if cantidad_cocina < datos_oc[0]["cantidad"]:
+    id_productos = obtener_id_producto(datos_oc[0]["sku"], datos_oc[0]["cantidad"], almacen_id_dict["despacho"])
+    print("esto es: {}".format(id_productos))
+    if len(id_productos) < datos_oc[0]["cantidad"]:
+        print("entre aqui lo de cantitad muevo producto")
+        buscar_mover_producto("despacho",datos_oc[0]["sku"],datos_oc[0]["cantidad"]-len(id_productos))
+    id_productos = obtener_id_producto(datos_oc[0]["sku"], datos_oc[0]["cantidad"], almacen_id_dict["despacho"])
+    print(len(id_productos))
+    cantidad_despacho = len(id_productos)
+    if cantidad_despacho >= datos_oc[0]["cantidad"]:
+        print("tengo la cantidad")
         # dunciona solo en caso de que se despache desde pulmon !!!!
-        ids_pulmon = obtener_id_producto(datos_oc[0]["sku"], datos_oc[0]["cantidad"] - cantidad_cocina, almacen_id_dict["cocina"])
-        id_productos.extend(ids_pulmon)
+        #ids_pulmon = obtener_id_producto(datos_oc[0]["sku"], datos_oc[0]["cantidad"] - cantidad_cocina, almacen_id_dict["cocina"])
+        #id_productos.extend(ids_pulmon)
     for id in id_productos:
         despachar_producto(datos_oc[0]["cliente"], oc, id, precio=1)

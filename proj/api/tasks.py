@@ -27,10 +27,10 @@ from .funciones.ftp import *
           liberar_almacen("recepcion")
 
 
-# @task
-# def cocinar_task():
-#     ver_buzon()
-#
-#  @task
-#  def verificar_task():
-#       verificar()
+@task
+def cocinar_task():
+    ver_buzon()
+
+ @task
+ def verificar_task():
+      verificar()

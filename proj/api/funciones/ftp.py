@@ -1,8 +1,9 @@
 import pysftp
 from xml.dom import minidom
-from .funciones_internas import  stock , cantidad_producto , cocinar_prod_sku, completar_oc
-from .requests_files import rechazar_oc , obtener_oc , recepcionar_oc
+from funciones_internas import  stock , cantidad_producto , cocinar_prod_sku, completar_oc
+from requests_files import rechazar_oc , obtener_oc , recepcionar_oc
 from time import *
+#from django.core.files import File
 
 
 #myHostname = "fierro.ing.puc.cl"
@@ -33,6 +34,7 @@ def ver_buzon():
 			if id_[0].firstChild.data in lista_ids:
 				pass
 			else:
+				#print(obtener_oc(id_[0].firstChild.data).json())
 				logica_oc(id_[0].firstChild.data)
 
 			#archivo = sftp.open(element,mode = "r")
@@ -54,6 +56,7 @@ def logica_oc(id_compra):
 		rechazar_oc(id_compra,"fecha")
 		escribir_txt_gen(id_compra)
 	elif cocinar_prod_sku(sku,qty): #verificar por que si no funcionar retorna false bien , pero si no retorna solo el mandar a fabricar nunca un true
+		print("aceptado")
 		recepcionar_oc(id_compra)
 		escribir_txt_acep(id_compra,sku,qty)
 		escribir_txt_gen(id_compra)
@@ -79,16 +82,18 @@ def verificar():
 			nueva_lista = nueva_linea.split(",")
 			lista_id.append(nueva_lista)
 	if lista_id != []:
+		print("no es vacio")
 		for orden in lista_id:
 			if int(orden[2]) <= cantidad_producto(orden[1]):
 				index = lista_id.index(orden)
 				lista_id.pop(index)
+				print("entre aqui")
 				completar_oc(orden[0])
 			else:
 				pass
 		with open("id_aceptados.txt",mode = "w") as file:
 			for ordenes_espera in lista_id:
-				string = ordenes_espera.join(",")
+				string = ",".join(ordenes_espera)
 				file.write(string +"\n")
 
 def convertir_time(time):

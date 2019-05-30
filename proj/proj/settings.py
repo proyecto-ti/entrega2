@@ -145,20 +145,20 @@ CELERY_BEAT_SCHEDULE = {
      },
      'crear_productos': {
          'task': 'api.tasks.crear_productos',
-         'schedule': 60*12,
+         'schedule': 60*5,
      },
      'pedir_profesor': {
          'task': 'api.tasks.pedir_profesor',
          'schedule': 60*15,
      },
-    # 'cocinar_task': {
-    #     'task': 'api.tasks.cocinar_task',
-    #     'schedule': 60*15,
-    # },
-    #  'verificar_task': {
-    #      'task': 'api.tasks.verificar_task',
-    #      'schedule': 60*10,
-    #  },
+     'cocinar_task': {
+         'task': 'api.tasks.cocinar_task',
+         'schedule': 60*15,
+     },
+      'verificar_task': {
+          'task': 'api.tasks.verificar_task',
+          'schedule': 60*10,
+      },
 }
 
 
