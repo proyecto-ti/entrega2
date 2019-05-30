@@ -29,8 +29,8 @@ def pedir_profesor():
 
 @task
 def cocinar_task():
-ver_buzon()
+    ver_buzon()
 
 @task
 def verificar_task():
-  verificar()
+    verificar()
