@@ -23,7 +23,7 @@ def pedir_profesor():
   pedir = generar_dict_compras()
   liberar_almacen("recepcion")
   for sku, cantidad in pedir.items():
-      pedir_prod_profesor(sku, cantidad)
+      pedir_prod_profesor(sku, 2)
       liberar_almacen("recepcion")
 
 

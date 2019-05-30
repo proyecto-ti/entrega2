@@ -157,7 +157,7 @@ def fabricarSinPago(sku, cantidad):
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     body = {"sku": sku, "cantidad": int(cantidad)}
 
-    result = requests.put(url, headers=headers, data=json.dumps(body))
+    result = requests.put(url, headers=headers, data=json.dumps(body), timeout = 8)
     return result.json()
 #####################################
 
