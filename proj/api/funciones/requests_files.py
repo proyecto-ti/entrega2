@@ -204,7 +204,7 @@ def despachar_producto(almacenId_destino, oc, productoId, precio=1):
                 'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     body = {"productoId": productoId, "oc": oc, "direccion": almacenId_destino, "precio": precio}
     respuesta = requests.delete(url, headers=headers_, data=json.dumps(body))
-    return 
+    return
 # BUSCA INVENTARIO DE UN GRUPO
 def get_inventories_grupox(grupo, url_changed=False):
     if not url_changed:
