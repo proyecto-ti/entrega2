@@ -1,14 +1,18 @@
 import pysftp
 from xml.dom import minidom
-from funciones_internas import  stock , cantidad_producto , cocinar_prod_sku, completar_oc
-from requests_files import rechazar_oc , obtener_oc , recepcionar_oc, 
+from .funciones_internas import  stock , cantidad_producto , cocinar_prod_sku, completar_oc
+from .requests_files import rechazar_oc , obtener_oc , recepcionar_oc
 from time import *
+#from django.core.files import File
 
+
+#myHostname = "fierro.ing.puc.cl"
+#myUsername = "grupo2_dev"
+#myPassword = "jefPFs1p7mSt8rx"
 
 myHostname = "fierro.ing.puc.cl"
-myUsername = "grupo2_dev"
-myPassword = "jefPFs1p7mSt8rx"
-
+myUsername = "grupo2"
+myPassword = "Cs8WSk2RgpQGUTNJ2"
 
 #funcion que va verificando si hay nuevas ordenes.
 def ver_buzon():
@@ -20,7 +24,7 @@ def ver_buzon():
 		for linea in file:
 			nueva = linea.replace("\n","")
 			lista_ids.append(nueva)
-	with pysftp.Connection(myHostname, username=myUsername ,password=myPassword,cnopts=cnopts) as sftp : 
+	with pysftp.Connection(myHostname, username=myUsername ,password=myPassword,cnopts=cnopts) as sftp :
 		sftp.cwd('/pedidos')
 		structure = sftp.listdir_attr()
 		for element in structure:
@@ -30,8 +34,9 @@ def ver_buzon():
 			if id_[0].firstChild.data in lista_ids:
 				pass
 			else:
+				#print(obtener_oc(id_[0].firstChild.data).json())
 				logica_oc(id_[0].firstChild.data)
-			
+
 			#archivo = sftp.open(element,mode = "r")
 			#my_doc = minidom.parse(archivo)
 			#id_ = my_doc.getElementsByTagName('id')
@@ -39,20 +44,19 @@ def ver_buzon():
 			#qty_ = my_doc.getElementsByTagName("qty")
 			#orden = obtener_oc(id_[0].firstChild.data)
 
-		
-		
+
+
 
 def logica_oc(id_compra):
-	orden = obtener_oc(id_compra)
+	orden = obtener_oc(id_compra).json()
 	sku = orden[0]["sku"]
 	qty = orden[0]["cantidad"]
-	print(sku)
-	print(qty)
 	fecha = orden[0]["fechaEntrega"]
 	if not tiempo_real(fecha):
 		rechazar_oc(id_compra,"fecha")
 		escribir_txt_gen(id_compra)
 	elif cocinar_prod_sku(sku,qty): #verificar por que si no funcionar retorna false bien , pero si no retorna solo el mandar a fabricar nunca un true
+		print("aceptado")
 		recepcionar_oc(id_compra)
 		escribir_txt_acep(id_compra,sku,qty)
 		escribir_txt_gen(id_compra)
@@ -68,26 +72,29 @@ def escribir_txt_gen(id_):
 
 def escribir_txt_acep(id_compra,sku,qty):
 	with open("id_aceptados.txt",mode = "a") as file:
-		file.write(id_compra+","+sku+","+qty+  "\n")
+		file.write(id_compra+","+str(sku)+","+str(qty)+  "\n")
 
-def verficar():
+def verificar():
 	lista_id = []
 	with open("id_aceptados.txt",mode = "r") as file:
 		for linea in file:
 			nueva_linea = linea.replace("\n","")
 			nueva_lista = nueva_linea.split(",")
 			lista_id.append(nueva_lista)
-	for orden in lista_id:
-		if orden[2] <= cantidad_producto(orden[1]):
-			index = lista_id.index(orden)
-			lista_id.pop(index)
-			completar_oc(orden[0])
-		else:
-			pass
-	with open("id_aceptados.txt",mode = "w") as file:
-		for ordenes_espera in lista_id:
-			string = ordenes_espera.join(",")
-			file.write(string +"\n")
+	if lista_id != []:
+		print("no es vacio")
+		for orden in lista_id:
+			if int(orden[2]) <= cantidad_producto(orden[1]):
+				index = lista_id.index(orden)
+				lista_id.pop(index)
+				print("entre aqui")
+				completar_oc(orden[0])
+			else:
+				pass
+		with open("id_aceptados.txt",mode = "w") as file:
+			for ordenes_espera in lista_id:
+				string = ",".join(ordenes_espera)
+				file.write(string +"\n")
 
 def convertir_time(time):
     datetime_obj = strptime("{}".format(time), '%Y-%m-%dT%H:%M:%S.%fZ')

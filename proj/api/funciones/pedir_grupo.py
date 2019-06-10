@@ -71,21 +71,24 @@ def pedir_prod_grupox(sku, cantidad, grupo):
 def pedir_productos_sku(sku, cantidad, url_changed=False):
     datos = productos()
     productores = datos[sku]["productores"]
-    if datos[sku]["propio"] != True:
-        for grupo in productores:
+    #if datos[sku]["propio"] != True:
+    for grupo in productores:
+        if grupo != 2:
             try:
                 result = get_inventories_grupox(grupo)
                 if result.status_code == 200 or result.status_code == 201:
-                    print("GRUPO", grupo, result.json())
                     result_2 = pedir_prod_grupox(sku, cantidad, grupo)
-
+                    print("GRUPO", grupo, result_2.json())
                 else:
                     pass
             except:
+
                 pass
-    else:
-        cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
+#    else:
+    #    cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
         #print(fabricarSinPago(sku, cantidad))
+
+#print(pedir_productos_sku("1001", 3))
 
 def pedir_prod_profesor(sku, cantidad):
     datos = productos()
@@ -93,7 +96,7 @@ def pedir_prod_profesor(sku, cantidad):
     if datos[sku]["propio"] == True:
         print("SKU", sku, "Cantidad", cantidad)
         cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
-        fabricarSinPago(sku, cantidad)
+        print(fabricarSinPago(sku, cantidad))
 
 def pedir_stock_minimo_grupos():
     pedir = generar_dict_compras()
@@ -104,6 +107,14 @@ def pedir_stock_minimo_grupos():
         liberar_almacen("recepcion")
 
 
+def pedir_profesor():
+    pedir = generar_dict_compras()
+    liberar_almacen("recepcion")
+    for sku, cantidad in pedir.items():
+        pedir_prod_profesor(sku, cantidad)
+        liberar_almacen("recepcion")
+
+#pedir_profesor()
 #pedir_productos_sku("1007", 3)
 #pedir_productos_sku("1007", 3)
 

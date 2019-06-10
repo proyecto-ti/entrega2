@@ -28,33 +28,34 @@ almacen_id_dict = {"recepcion" : "5cc7b139a823b10004d8e6d3",
                     "pulmon" : "5cc7b139a823b10004d8e6d7",
                     "cocina" : "5cc7b139a823b10004d8e6d8"}
 
-sku_stock_dict = {  "1101": 100, "1111": 100, "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" : 170,
-                    "1106": 400,"1114": 50,"1215" : 20,"1115" : 30,"1105" : 50,
-                    "1216": 50,"1116": 250,"1110" : 80,"1310" : 20,
-                    "1210": 150,"1112": 130,"1108" : 10,"1407" : 40,"1207" : 20,
-                    "1107": 50,"1307": 170,"1211" : 60}
+sku_stock_dict = {  "1101": 150, "1111": 150, "1301" : 80, "1201" : 270, "1209" : 50, "1109" : 80,"1309" : 190,
+                    "1106": 440,"1114": 80,"1215" : 50,"1115" : 60,"1105" : 80,
+                    "1216": 80,"1116": 290,"1110" : 100,"1310" : 50,
+                    "1210": 180,"1112": 160,"1108" : 35,"1407" : 60,"1207" : 40,
+                    "1107": 70,"1307": 200,"1211" : 90}
 
 sku_producidos = ["1001", "1002", "1006", "1010", "1011", "1012", "1014", "1016"]
 
 ordenes_por_confirmar = list()
 ordenes_aceptadas = list()
-mins_espera_pedido = 5
+mins_espera_pedido = 240
 
 # AMBIENTE DE DESARROLLO
+"""
 id_grupos = {1: "5cbd31b7c445af0004739be3", 2: "5cbd31b7c445af0004739be4", 3: "5cbd31b7c445af0004739be5",
              4: "5cbd31b7c445af0004739be6", 5: "5cbd31b7c445af0004739be7", 6: "5cbd31b7c445af0004739be8",
              7: "5cbd31b7c445af0004739be9", 8: "5cbd31b7c445af0004739bea", 9: "5cbd31b7c445af0004739beb",
              10: "5cbd31b7c445af0004739bec", 11: "5cbd31b7c445af0004739bed", 12: "5cbd31b7c445af0004739bee",
              13: "5cbd31b7c445af0004739bef", 14: "5cbd31b7c445af0004739bf0"}
-
-# AMBIENTE DE PRODUCCION
 """
-id_grupos_prod = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 3: "5cc66e378820160004a4c3be",
+# AMBIENTE DE PRODUCCION
+
+id_grupos = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 3: "5cc66e378820160004a4c3be",
              4: "5cc66e378820160004a4c3bf", 5: "5cc66e378820160004a4c3c0", 6: "5cc66e378820160004a4c3c1",
              7: "5cc66e378820160004a4c3c2", 8: "5cc66e378820160004a4c3c3", 9: "5cc66e378820160004a4c3c4",
              10: "5cc66e378820160004a4c3c5", 11: "5cc66e378820160004a4c3c6", 12: "5cc66e378820160004a4c3c7",
              13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"}
-"""
+
 ###FUNCION DE HASH NO UTILIZAR###
 def sign_request(string):
 
@@ -156,7 +157,7 @@ def fabricarSinPago(sku, cantidad):
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     body = {"sku": sku, "cantidad": int(cantidad)}
 
-    result = requests.put(url, headers=headers, data=json.dumps(body))
+    result = requests.put(url, headers=headers, data=json.dumps(body), timeout = 8)
     return result.json()
 #####################################
 
@@ -197,14 +198,13 @@ def mover_entre_almacenes_por_id(productoId, almacenId_destino):
 
 #función despachar de la documentación
 def despachar_producto(almacenId_destino, oc, productoId, precio=1):
-    message = 'DELETE' + productoId + almacenId_destino + precio + oc
+    message = 'DELETE' + productoId + almacenId_destino + str(precio) + oc
     url = '{}stock'.format(api_url_base)
     headers_ = {'Content-Type': 'application/json',
                 'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     body = {"productoId": productoId, "oc": oc, "direccion": almacenId_destino, "precio": precio}
-    respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
-
-
+    respuesta = requests.delete(url, headers=headers_, data=json.dumps(body))
+    return
 # BUSCA INVENTARIO DE UN GRUPO
 def get_inventories_grupox(grupo, url_changed=False):
     if not url_changed:
@@ -214,7 +214,7 @@ def get_inventories_grupox(grupo, url_changed=False):
 
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
     try:
-        result = requests.get(url, headers=headers_)
+        result = requests.get(url, headers=headers_, timeout = 8)
         return result
     except:
         return list()
@@ -223,7 +223,7 @@ def post_orders_grupox(grupo, oc_id, cantidad, sku):
     url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
     headers_ = {'Content-Type': 'application/json', 'group': '2'}
     body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion'], 'oc': oc_id}
-    result = requests.post(url, headers=headers_, data=json.dumps(body))
+    result = requests.post(url, headers=headers_, data=json.dumps(body), timeout = 8)
     return result
 
 def vaciar_almacen_despacho(todos_productos):

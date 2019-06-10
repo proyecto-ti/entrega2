@@ -24,7 +24,7 @@ name_sku_dict = {"Sesamo": "1011",
 #                      "5cbd3ce444f67600049431be" : "cocina"}
 
 #PRODUCCION
-almacen_id_dict = {"5cc7b139a823b10004d8e6d3" : "recepcion",
+almacen_dict_id = {"5cc7b139a823b10004d8e6d3" : "recepcion",
                    "5cc7b139a823b10004d8e6d4" : "despacho",
                    "5cc7b139a823b10004d8e6d5" : "almacen_1",
                    "5cc7b139a823b10004d8e6d6" : "almacen_2",
@@ -38,6 +38,7 @@ sku_stock_dict = {  "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" :
                     "1210" : 150,"1112" : 130,"1108" : 10,"1407" : 40,"1207" : 20,
                     "1107" : 50,"1307" : 170,"1211" : 60}
 
+sku_min_entregar = {"1001": 30, "1002": 30, "1006": 30, "1010": 30, "1011": 30, "1012": 30, "1014": 30, "1016": 30}
 
 def inventories_view(request):
     lista = stock()
@@ -83,7 +84,16 @@ class InventoriesView(APIView):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
         lista = stock(view = True)
-        return JsonResponse(lista, status=200, safe=False)
+
+        lista_aux = []
+        for producto in lista:
+            sku = producto["sku"]
+            total = producto["total"]
+            if total > sku_min_entregar[sku]:
+                producto["total"] = 3
+                lista_aux.append(producto)
+
+        return JsonResponse(lista_aux, status=200, safe=False)
 
 
 # Cuando hagan post con POSTMAN hay que ponerle un / al final de la URL, así:
@@ -96,7 +106,7 @@ class OrdersView(APIView):
         cantidad = request.data.get("cantidad")
         almacenId = request.data.get("almacenId")
         oc = request.data.get("oc")
-
+        print("pasando por acajajaj")
         if not sku or not cantidad or not almacenId or not oc:
             return Response(data="No se creó el pedido por un error del cliente en la solicitud", status=400)
 
@@ -105,7 +115,7 @@ class OrdersView(APIView):
             aviso_rechazar_pedido(oc, grupo)
             return Response(data="No producimos productos con ese sku", status=404)
 
-        elif cantidad > cantidad_producto(sku):
+        elif int(cantidad) > (int(cantidad_producto(sku)) - int(sku_min_entregar[sku])):
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2",
