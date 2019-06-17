@@ -113,11 +113,13 @@ class OrdersView(APIView):
         elif sku not in sku_producidos:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
+            rechazar_oc(oc, 'No se produce ese sku')
             return Response(data="No producimos productos con ese sku", status=404)
 
         elif int(cantidad) > (int(cantidad_producto(sku)) - int(sku_min_entregar[sku])):
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
             aviso_rechazar_pedido(oc, grupo)
+            rechazar_oc(oc, 'No se cuenta con cantidad pedida')
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2",
                           "aceptado": False, "despachado": False}
             return JsonResponse(dictionary, status=201, safe=False)
@@ -125,6 +127,7 @@ class OrdersView(APIView):
         else:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE ACEPTA LA ENTREGA
             aviso_aceptar_pedido(oc, grupo)
+            recepcionar_oc(oc)
             liberar_almacen("despacho")
             buscar_mover_producto("despacho", sku, cantidad)
             mover_entre_bodegas(sku, cantidad, almacenId, oc)
