@@ -147,6 +147,7 @@ def revisarBodega():
 
     result = requests.get(url, headers=headers)
     return result
+    return result
 
 # FABRICA PRODUCTOS PROCESADOS SI SE TIENEN LAS MATERIAS PRIMAS NECESARIAS EN EL DESPACHO
 
