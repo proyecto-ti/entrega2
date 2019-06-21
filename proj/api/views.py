@@ -108,18 +108,21 @@ class OrdersView(APIView):
         cantidad = request.data.get("cantidad")
         almacenId = request.data.get("almacenId")
         oc = request.data.get("oc")
-        print("pasando por acajajaj")
+        print("Nos hacen orden")
         if not sku or not cantidad or not almacenId or not oc:
+            print('Mal pedido')
             return Response(data="No se creó el pedido por un error del cliente en la solicitud", status=400)
 
         elif sku not in sku_producidos:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
+            print('1: Se rachaza pedido ',oc)
             aviso_rechazar_pedido(oc, grupo)
             rechazar_oc(oc, 'No se produce ese sku')
             return Response(data="No producimos productos con ese sku", status=404)
 
         elif int(cantidad) > (int(cantidad_producto(sku)) - int(sku_min_entregar[sku])):
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE RECHAZA LA ENTREGA
+            print('2: Se rachaza pedido ',oc)
             aviso_rechazar_pedido(oc, grupo)
             rechazar_oc(oc, 'No se cuenta con cantidad pedida')
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2",
@@ -128,6 +131,7 @@ class OrdersView(APIView):
 
         else:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE ACEPTA LA ENTREGA
+            print('3: Se acepta pedido ',oc)
             aviso_aceptar_pedido(oc, grupo)
             recepcionar_oc(oc)
             liberar_almacen("despacho")
