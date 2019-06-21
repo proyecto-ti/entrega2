@@ -6,13 +6,13 @@ from time import *
 #from django.core.files import File
 
 
-#myHostname = "fierro.ing.puc.cl"
-#myUsername = "grupo2_dev"
-#myPassword = "jefPFs1p7mSt8rx"
-
 myHostname = "fierro.ing.puc.cl"
-myUsername = "grupo2"
-myPassword = "Cs8WSk2RgpQGUTNJ2"
+myUsername = "grupo2_dev"
+myPassword = "jefPFs1p7mSt8rx"
+
+#myHostname = "fierro.ing.puc.cl"
+#myUsername = "grupo2"
+#myPassword = "Cs8WSk2RgpQGUTNJ2"
 
 #funcion que va verificando si hay nuevas ordenes.
 def ver_buzon():

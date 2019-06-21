@@ -13,13 +13,15 @@ api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 #api_url_base = 'https://integracion-2019-prod.herokuapp.com/bodega/'
 #api_oc_url_base = 'https://integracion-2019-prod.herokuapp.com/oc/'
 
-
+# DESARROLLO
 almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
                      "despacho" : "5cbd3ce444f67600049431ba",
                      "almacen_1" : "5cbd3ce444f67600049431bb",
                      "almacen_2" : "5cbd3ce444f67600049431bc",
                      "pulmon" : "5cbd3ce444f67600049431bd",
                      "cocina" : "5cbd3ce444f67600049431be"}
+
+# PRODUCCION
 """
 almacen_id_dict = {"recepcion" : "5cc7b139a823b10004d8e6d3",
                     "despacho" : "5cc7b139a823b10004d8e6d4",
