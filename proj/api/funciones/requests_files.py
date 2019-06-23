@@ -241,3 +241,4 @@ def vaciar_almacen_despacho(todos_productos):
                         'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
+

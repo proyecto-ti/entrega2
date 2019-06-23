@@ -299,3 +299,21 @@ def completar_oc(oc):
         #id_productos.extend(ids_pulmon)
     for id in id_productos:
         despachar_producto(datos_oc[0]["cliente"], oc, id, precio=1)
+
+
+def vaciar_pulmon(todos_productos):
+    for prod in todos_productos:
+        productos_prod_en_almacen = obtener_productos_almacen(almacen_id_dict["pulmon"], prod)
+        for elemento in productos_prod_en_almacen:
+            productoId = elemento["_id"]
+            mover_entre_almacenes_por_id(productoId, almacen_id_dict["despacho"])
+            message = "DELETE" + productoId + "direc" + "20" + "4af9f23d8ead0e1d32000900"
+            url = '{}stock'.format(api_url_base)
+            headers_ = {'Content-Type': 'application/json',
+                        'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+            body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
+            result = requests.delete(url, headers=headers_, data=json.dumps(body))
+
+
+#todos_productos = productos().keys()
+#vaciar_pulmon(todos_productos)
