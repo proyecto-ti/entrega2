@@ -7,12 +7,13 @@ import math
 import time
 
 api_key = 'A#soL%kRvHX2qHm'
-api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
-api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
+#api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
+#api_oc_url_base = 'https://integracion-2019-dev.herokuapp.com/oc/'
 
-#api_url_base = 'https://integracion-2019-prod.herokuapp.com/bodega/'
-#api_oc_url_base = 'https://integracion-2019-prod.herokuapp.com/oc/'
+api_url_base = 'https://integracion-2019-prod.herokuapp.com/bodega/'
+api_oc_url_base = 'https://integracion-2019-prod.herokuapp.com/oc/'
 
+"""
 # DESARROLLO
 almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
                      "despacho" : "5cbd3ce444f67600049431ba",
@@ -20,16 +21,16 @@ almacen_id_dict = {"recepcion" : "5cbd3ce444f67600049431b9",
                      "almacen_2" : "5cbd3ce444f67600049431bc",
                      "pulmon" : "5cbd3ce444f67600049431bd",
                      "cocina" : "5cbd3ce444f67600049431be"}
-
-# PRODUCCION
 """
+# PRODUCCION
+
 almacen_id_dict = {"recepcion" : "5cc7b139a823b10004d8e6d3",
                     "despacho" : "5cc7b139a823b10004d8e6d4",
                     "almacen_1" : "5cc7b139a823b10004d8e6d5",
                     "almacen_2" : "5cc7b139a823b10004d8e6d6",
                     "pulmon" : "5cc7b139a823b10004d8e6d7",
                     "cocina" : "5cc7b139a823b10004d8e6d8"}
-"""
+
 
 sku_stock_dict = {  "1101": 150, "1111": 150, "1301" : 80, "1201" : 270, "1209" : 50, "1109" : 80,"1309" : 190,
                     "1106": 440,"1114": 80,"1215" : 50,"1115" : 60,"1105" : 80,
@@ -44,21 +45,21 @@ ordenes_aceptadas = list()
 mins_espera_pedido = 240
 
 # AMBIENTE DE DESARROLLO
-
+"""
 id_grupos = {1: "5cbd31b7c445af0004739be3", 2: "5cbd31b7c445af0004739be4", 3: "5cbd31b7c445af0004739be5",
              4: "5cbd31b7c445af0004739be6", 5: "5cbd31b7c445af0004739be7", 6: "5cbd31b7c445af0004739be8",
              7: "5cbd31b7c445af0004739be9", 8: "5cbd31b7c445af0004739bea", 9: "5cbd31b7c445af0004739beb",
              10: "5cbd31b7c445af0004739bec", 11: "5cbd31b7c445af0004739bed", 12: "5cbd31b7c445af0004739bee",
              13: "5cbd31b7c445af0004739bef", 14: "5cbd31b7c445af0004739bf0"}
-
-# AMBIENTE DE PRODUCCION
 """
+# AMBIENTE DE PRODUCCION
+
 id_grupos = {1: "5cc66e378820160004a4c3bc", 2: "5cc66e378820160004a4c3bd", 3: "5cc66e378820160004a4c3be",
              4: "5cc66e378820160004a4c3bf", 5: "5cc66e378820160004a4c3c0", 6: "5cc66e378820160004a4c3c1",
              7: "5cc66e378820160004a4c3c2", 8: "5cc66e378820160004a4c3c3", 9: "5cc66e378820160004a4c3c4",
              10: "5cc66e378820160004a4c3c5", 11: "5cc66e378820160004a4c3c6", 12: "5cc66e378820160004a4c3c7",
              13: "5cc66e378820160004a4c3c8", 14: "5cc66e378820160004a4c3c9"}
-"""
+
 ###FUNCION DE HASH NO UTILIZAR###
 def sign_request(string):
 
