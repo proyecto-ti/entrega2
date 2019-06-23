@@ -51,7 +51,7 @@ def inventories_view(request):
 def bodegas_view(request):
     lista = []
     for item in revisarBodega().json():
-        dict = {"almacen": almacen_dict_id[item['_id']], "total" : item['totalSpace'], "used": item['usedSpace']}
+        dict = {"almacen": almacen_id_dict[item['_id']], "total" : item['totalSpace'], "used": item['usedSpace']}
         lista.append(dict)
 
     query = {"query": lista}
