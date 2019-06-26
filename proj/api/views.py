@@ -39,7 +39,7 @@ sku_stock_dict = {  "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" :
                     "1210" : 150,"1112" : 130,"1108" : 10,"1407" : 40,"1207" : 20,
                     "1107" : 50,"1307" : 170,"1211" : 60}
 
-sku_min_entregar = {"1001": 50, "1002": 50, "1006": 50, "1010": 50, "1011": 50, "1012": 50, "1014": 50, "1016": 50}
+sku_min_entregar = {"1001": 30, "1002": 30, "1006": 30, "1010": 30, "1011": 30, "1012": 30, "1014": 30, "1016": 30}
 
 def inventories_view(request):
     lista = stock()
@@ -134,13 +134,18 @@ class OrdersView(APIView):
         else:
             ## SE MANDA A ENDPOINT DEL GRUPO QUE SE ACEPTA LA ENTREGA
             print('3: Se acepta pedido ',oc, 'grupo', grupo)
-            aviso_aceptar_pedido(oc, grupo)
-            recepcionar_oc(oc)
-            liberar_almacen("despacho")
-            buscar_mover_producto("despacho", sku, cantidad)
-            mover_entre_bodegas(sku, cantidad, almacenId, oc)
-            dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
-            return JsonResponse(dictionary, status=201, safe=False)
+            try:
+                aviso_aceptar_pedido(oc, grupo)
+                liberar_almacen("despacho")
+                buscar_mover_producto("despacho", sku, cantidad)
+                mover_entre_bodegas(sku, cantidad, almacenId, oc)
+                dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
+                recepcionar_oc(oc)
+                return JsonResponse(dictionary, status=201, safe=False)
+            except:
+                rechazar_oc(oc, 'No se cuenta con cantidad pedida')
+                return Response(data="Error en pedido", status=400)
+
 
 class OCView(APIView):
     def post(self, request, oc_id):
